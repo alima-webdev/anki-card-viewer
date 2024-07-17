@@ -1,12 +1,10 @@
 import json
-# from typing import *
 
 from aqt import QObject, pyqtSlot
 from aqt import mw
 
 from .consts import HOOKS_PREFIX
 from .devtools import log
-
 
 class Backend(QObject):
     def __init__(self):
@@ -24,25 +22,17 @@ class Backend(QObject):
             card["tags"] = tags
             cards.append(card)
 
-        # log("Response: ")
-        # log(cards)
         return json.dumps(cards).replace("#", "!").replace("&", "n")
 
     # Get Tags
     @pyqtSlot(result=list)
     def getAllTags(self):
-        # log("Backend Fn: getTags")
-
         tags = mw.col.tags.all()
-
-        # log("Response: ")
-        # log(tags)
         return tags
 
     # Get Cards Info
     @pyqtSlot(list, result=str)
     def getCardsInfo(self, ids):
-        # log("Backend Fn: getCardsInfo")
 
         cards = []
         for id in ids:
@@ -59,15 +49,11 @@ class Backend(QObject):
             cards.append(card)
 
         cardsJSON = json.dumps(cards).replace("#", "!").replace("&", "n")
-        # log("Response: ")
-        # log(cardsJSON)
         return cardsJSON
 
     # Suspend
     @pyqtSlot(str, result=bool)
     def suspend(self, cardId):
-        # anki.scheduler.BuryOrSuspend(card_ids=cardId, notes_id=[], mode=anki.scheduler.BuryOrSuspend.SUSPEND)
-        # log("Backend Fn: suspend")
         try:
             log(f"Looking for a card with ID {cardId}...")
             # Get the card from the collection by card id

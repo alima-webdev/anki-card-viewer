@@ -7,7 +7,7 @@ export const ANKI = {
     /**
      * Number of cards per page
      */
-    CARDS_PER_PAGE: 2,
+    CARDS_PER_PAGE: 90,
     /**
      * Default search query (initial query)
      */
