@@ -37,7 +37,6 @@ class CardViewerDialog(QDialog):
         # Splitter
         self.splitter = QSplitter()
         self.splitter.setOrientation(Qt.Orientation.Horizontal)
-        # self.splitter.setHandleWidth(0)
         self.splitter.setStyleSheet(
             "QSplitter::handle {  image: url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='); }"
         )
@@ -53,7 +52,7 @@ class CardViewerDialog(QDialog):
         # Navigate
         self.navigate("web/dist/index.html")
 
-        # TEST
+        # Editor
         self.editorWidget = QWidget()
         self.editor = Editor(
             mw,
@@ -61,13 +60,9 @@ class CardViewerDialog(QDialog):
             self,
             editor_mode=EditorMode.EDIT_CURRENT,
         )
-        # self.editor.call_after_note_saved(self.editNoteCallback)
 
         self.editorWidget.setMinimumWidth(200)
-        self.editorWidget.setMaximumWidth(600)
-        # self.layout.addWidget(self.editorWidget)
-
-        # END TEST
+        self.editorWidget.setMaximumWidth(400)
 
         self.splitter.insertWidget(1, self.webview)
         self.splitter.insertWidget(2, self.editorWidget)

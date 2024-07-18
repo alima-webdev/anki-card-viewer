@@ -16,7 +16,7 @@ export async function getUserTags(baseTag = ANKI.BASE_CATEGORY_TAG) {
 }
 
 export async function getNoteTags(noteId: string, baseTag = "") {
-    console.log("getNoteTags")
+    // console.log("getNoteTags")
     let tags = Array.from(new Set(
         (await sendRequest({
             action: "getNoteTags",

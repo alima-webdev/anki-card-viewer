@@ -27,29 +27,16 @@ export async function initConnection() {
             // Connect to a signal:
             channel.objects.backend.triggerReload.connect(function (card) {
                 // This callback will be invoked whenever the signal is emitted on the C++/QML side.
-                console.error("JS: TRIGGER RELOAD")
                 let newCard = JSON.parse(card)
-                // console.error(newCard.cardId)
-                // return;
                 let updatedCards = [...currentCards.value]
                 const arrayIndex = updatedCards.findIndex(card => {
                     return card.cardId == newCard.cardId
                 })
-                // console.error(arrayIndex)
                 if(arrayIndex >= 0) {
-                    console.error("CHECK")
-                    // let prevCard = JSON.stringify(updatedCards[arrayIndex]) 
                     updatedCards[arrayIndex].question = newCard.question
                     updatedCards[arrayIndex].answer = newCard.answer
-                    // console.error("----------")
-                    // console.error(JSON.stringify(updatedCards[arrayIndex]))
-                    // console.error(JSON.stringify(newCard))
                     currentCards.value = [...updatedCards]
-
-                    // console.error(JSON.stringify(currentCards.value[arrayIndex]))
                 }
-                // console.error(JSON.stringify(currentCards[arrayIndex]))
-                // searchQuery.value = searchQuery.value + " "
             });
 
             resolve(true)
@@ -68,7 +55,7 @@ export async function initConnection() {
  * @returns {Promise<BasicCardInfo[]>}
  */
 export async function getCardsFromQuery(query: string, currentPage: number): Promise<QueryResults> {
-    log("getCardsFromQuery")
+    // log("getCardsFromQuery")
     let queryResults = await new Promise((resolve, reject) => {
         nativeBackend.getQueryPage(JSON.stringify({
             query: query,
@@ -90,8 +77,6 @@ export async function getCardsFromQuery(query: string, currentPage: number): Pro
  * @returns {boolean}
  */
 export async function editCard(cardId: number) {
-    console.error("EDIT CARD")
-    console.error(cardId)
     return await new Promise((resolve, reject) => {
         nativeBackend.editCard(cardId, (response) => {
             resolve(response)

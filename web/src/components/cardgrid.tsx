@@ -41,7 +41,6 @@ export function CardGridComponent({ paginationSignal }) {
      * @param {switchElementId} string - Id of the element being pressed
      */
     const suspendedCheckChanged = async (switchElementId) => {
-        console.error("suspendedCheckChanged")
         // Get the element
         const switchElement = document.getElementById(switchElementId) as HTMLElement
 
@@ -73,31 +72,20 @@ export function CardGridComponent({ paginationSignal }) {
     // Start the current category variable
     let currentCategory = ""
 
-    // console.error(cards.length)
     return (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
             {(cards.length > 0 ? cards.map(({ cardId, answer, isSuspended, tags, tagsOfInterest = [] }) => {
-
-                // let tagsOfInterestSplitted = tagsOfInterest.map(tag => {
-                //     return tag.split("::")
-                // })
-
 
                 // Card category
                 let category = ""
                 if (tagsOfInterest.length == 0) {
                     category = "Miscellaneous"
-                    // console.error("ERROR")
                 } else {
-                    log("TAGS")
                     tagsOfInterest = tagsOfInterest.map(tag => {
                         return parseTag(tag)
                     })
-                    log(JSON.stringify(tagsOfInterest).replace("#", "!"))
                     category = tagsOfInterest[0].replace(ANKI.BASE_CATEGORY_TAG, "").split("::").filter(Boolean)[0].replace("_", " ")
                 }
-                // console.error("HERE")
-                // tagsOfInterest[0][0] ?? "Miscellaneous"
 
                 // Decide if a category header should be inserted and sets the current category if needed
                 let insertCategoryHeader = false
@@ -110,7 +98,7 @@ export function CardGridComponent({ paginationSignal }) {
                     <>
                         {/* Category Header */}
                         {(insertCategoryHeader ?
-                            <div className="col-span-3">
+                            <div className="md:col-span-3 lg:col-span-4">
                                 <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight">
                                     {currentCategory}
                                 </h1>
@@ -141,9 +129,6 @@ export function CardGridComponent({ paginationSignal }) {
                                                 </>
                                             ) : "")}
                                             <div>{tags.map(tag => (<div className="mb-1 text-xs text-muted-foreground">{parseTag(tag)}</div>))}</div>
-                                            {/* <div>{tagsOfInterest.map(tag => {
-                                                    return (<div className="mb-1 text-xs text-muted-foreground">{tag.join(" → ")}</div>)
-                                                })}</div> */}
                                         </PopoverContent>
                                     </Popover>
                                     {/* : "")} */}

@@ -21,7 +21,6 @@ import { log } from './devtools';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EllipsisIcon } from 'lucide-react';
 import { Pagination as PaginationElement, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
-import { useWorker, useWorkerAsync } from './api/worker';
 
 export let searchQuery = signal("")
 // - Pagination
@@ -30,26 +29,8 @@ export let loading = signal(true)
 
 effect(() => {
 	const performEffect = async () => {
-		log("signalEffect")
-		// Get the search results
 
-
-		// if (window.Worker) {
-		// const myWorker = new Worker("./worker.ts");
-		// // }
-		// let { cards, totalPages } = await performQuery(searchQuery.value, paginationSignal.value.current)
-		// const performQueryOnWorker = (query, currentPage) => {
-		// 	return new Promise(async (resolve, reject) => {
-		// 		let results = (await Connector.getCardsFromQuery(query, currentPage))
-		// 		console.error(results)
-		// 		resolve(results)
-		// 		// return await performQuery(query, currentPage)
-		// 	})
-		// }
-		// let { cards, totalPages } = await useWorkerAsync(performQueryOnWorker, { Connector: Connector, query: searchQuery.value, currentPage: paginationSignal.value.current })
-		// useWorker(performQueryOnWorker, { query: searchQuery.value, currentPage: paginationSignal.value.current }, ({ cards, totalPages }) => {
-		// Set the current cards in the page
-
+		// Get the current cards in the page
 		let { cards, totalPages } = await performQuery(searchQuery.value, paginationSignal.value.current)
 		currentCards.value = cards
 

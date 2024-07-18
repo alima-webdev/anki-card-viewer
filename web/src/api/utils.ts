@@ -90,7 +90,7 @@ export function processTags(cards) {
         card.tagsOfInterest = tagsOfInterest
         return card
     })
-    log(Object.keys(processedCards[0]))
+    // log(Object.keys(processedCards[0]))
     return processedCards
 }
 
