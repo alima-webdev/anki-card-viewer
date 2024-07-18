@@ -13,7 +13,6 @@ def init():
     action = QAction("Open the Card Viewer", mw)
     action.triggered.connect(openDialog)
     mw.form.menuTools.addAction(action)
-    openDialog()
 
 
 def openDialog():
