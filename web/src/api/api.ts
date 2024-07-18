@@ -36,6 +36,16 @@ export async function performQuery(query: string = ANKI.DEFAULT_SEARCH_QUERY, cu
 }
 
 /**
+ * Edit the card
+ *
+ * @param {cardId} string - Card Id
+ * @returns {QueryResults}
+ */
+export async function editCard(cardId: number) {
+    return (await Connector.editCard(cardId))
+}
+
+/**
  * Get the "full" card information required for the addon based on the basic information (ids and tags) already retrieved
  * @async
  * @param {cards} BasicCardInfo[] - Cards

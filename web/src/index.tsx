@@ -140,6 +140,7 @@ export function App() {
 									<EllipsisIcon></EllipsisIcon>
 								</PaginationLink>
 							</PaginationItem>
+							
 						</PaginationContent>
 					</PaginationElement>
 				</>

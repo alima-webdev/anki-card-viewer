@@ -1,3 +1,5 @@
+import os
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -10,4 +12,5 @@ class bcolors:
     UNDERLINE = '\033[4m'
     
 def log(object):
-    print(f"{bcolors.HEADER}{object}{bcolors.ENDC}")
+    if(os.environ["DEVELOPMENT"] == "1"):
+        print(f"{bcolors.HEADER}{object}{bcolors.ENDC}")

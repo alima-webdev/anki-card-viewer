@@ -7,6 +7,7 @@ from .cardviewer import CardViewerDialog
 
 mw.addonManager.setWebExports(__name__, r"web/.*")
 
+cardViewerDialog = CardViewerDialog()
 def init():
     # Add action to Anki's tools menu
     action = QAction("Open the Card Viewer", mw)
@@ -17,6 +18,9 @@ def init():
 
 def openDialog():
     # Clear the terminal screen
-    os.system('cls' if os.name == 'nt' else 'clear')
+    # os.system('cls' if os.name == 'nt' else 'clear')
     
-    CardViewerDialog().open()
+    cardViewerDialog.open()
+
+def editNote(noteId, cardId):
+    cardViewerDialog.editNote(noteId, cardId)

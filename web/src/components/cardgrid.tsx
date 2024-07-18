@@ -12,14 +12,14 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 
 // Internal
-import { suspend, unsuspend } from '../api/api';
+import { suspend, unsuspend, editCard } from '../api/api';
 
 // Devtools
 import { log } from '../devtools';
 import { ANKI } from '../globals';
 import { parseTag } from '../api/utils';
-import { searchQuery } from '../index';
-import { useState } from 'preact/hooks';
+// import { searchQuery } from '../index';
+// import { useState } from 'preact/hooks';
 
 export const currentCards = signal([])
 
@@ -63,6 +63,11 @@ export function CardGridComponent({ paginationSignal }) {
             newCards[arrayIndex].isSuspended = !isSuspended
         }
         currentCards.value = [...newCards]
+    }
+
+    let cardClickEvent = (event: MouseEvent) => {
+        let cardId = parseInt((event.currentTarget as HTMLElement).getAttribute('data-id'))
+        editCard(cardId)
     }
 
     // Start the current category variable
@@ -115,6 +120,7 @@ export function CardGridComponent({ paginationSignal }) {
                         {/* Card */}
                         <Card className={(isSuspended ? "bg-gray-100 text-muted-foreground" : "") + " flex flex-col cursor-pointer"} data-id={cardId} data-suspended={isSuspended}>
                             <CardHeader>
+                                {cardId}
                                 <div class="flex items-center">
                                     {/* Tag and Popover */}
                                     <div className="flex-1 text-xs text-left text-muted-foreground">
@@ -146,7 +152,7 @@ export function CardGridComponent({ paginationSignal }) {
                             </CardHeader>
                             {/* Content */}
                             <CardContent className="">
-                                <div dangerouslySetInnerHTML={{ __html: answer }}></div>
+                                <div onClick={cardClickEvent} data-id={cardId} dangerouslySetInnerHTML={{ __html: answer }}></div>
                             </CardContent>
                             {/* Footer (suspension status switch) */}
                             <CardFooter className="flex flex-1 flex-col items-start justify-end">

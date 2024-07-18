@@ -17,3 +17,5 @@ PATH_TO_HTML = f"""web/dist/index.html"""
 CONFIG = mw.addonManager.getConfig(ADDON_NAME)
 
 HOOKS_PREFIX = "CardViewer."
+
+BASE_TAG = ""
