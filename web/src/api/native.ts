@@ -1,5 +1,6 @@
 // Imports
 // Internal
+import { ANKI } from "../globals";
 import { getContent, processTags } from "./utils"
 
 // Devtools
@@ -8,7 +9,7 @@ import { log } from "../devtools"
 /**
  * Variable used to communicate with the backend API (QWebChannel backend)
  */
-let nativeBackend;
+export let nativeBackend;
 
 /**
  * Initiate the API and QWebChannel connection
@@ -34,14 +35,20 @@ export async function initConnection() {
  * @param {query} string - Search criteria
  * @returns {Promise<BasicCardInfo[]>}
  */
-export async function getCardsFromQuery(query: string): Promise<BasicCardInfo[]> {
-    let cards = await new Promise((resolve, reject) => {
-        nativeBackend.findCards(query, (response) => {
-            let responseObj = JSON.parse(response)
-            resolve(responseObj)
+export async function getCardsFromQuery(query: string, currentPage: number): Promise<QueryResults> {
+    log("getCardsFromQuery")
+    let queryResults = await new Promise((resolve, reject) => {
+        nativeBackend.getQueryPage(JSON.stringify({
+            query: query,
+            currentPage: currentPage,
+            cardsPerPage: ANKI.CARDS_PER_PAGE,
+            baseTag: ANKI.BASE_CATEGORY_TAG
+        }), (response) => {
+            resolve(JSON.parse(response))
         })
-    })
-    return cards as BasicCardInfo[]
+    }) as QueryResults
+
+    return queryResults
 }
 
 /**

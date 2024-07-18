@@ -31,20 +31,8 @@ export async function initAPI() {
  * @param {query} string - Search criteria
  * @returns {QueryResults}
  */
-export async function performQuery(query: string = ANKI.DEFAULT_SEARCH_QUERY) {
-    let cards = (await Connector.getCardsFromQuery(query))
-    let cardsClone = cards.slice(0) as BasicCardInfo[]
-
-    cards = sortCardsByTags(cards)
-
-    // Split the ids into 20 block arrays
-    let pages = [] as BasicCardInfo[][]
-    while (cards.length) {
-        const page = cards.splice(0, ANKI.CARDS_PER_PAGE)
-        pages.push(page)
-    }
-
-    return { cardsBasicInfo: cardsClone, pages: pages } as QueryResults
+export async function performQuery(query: string = ANKI.DEFAULT_SEARCH_QUERY, currentPage: number) {
+    return (await Connector.getCardsFromQuery(query, currentPage))
 }
 
 /**
@@ -78,4 +66,8 @@ export async function suspend(cardId: number) {
  */
 export async function unsuspend(cardId: number) {
     return (await Connector.unsuspend(cardId))
+}
+
+export {
+    Connector
 }

@@ -8,5 +8,5 @@ import { terminal } from 'virtual:terminal'
  * @param args 
  */
 export function log(args) {
-    terminal.log(args)
+    terminal.log(args.replace("#", "!").replace("&", "n"))
 }

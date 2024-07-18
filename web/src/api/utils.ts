@@ -46,6 +46,22 @@ export function getContent(htmlString: string, querySelector: string = "#text") 
     return content;
 }
 
+
+/**
+ * Parse tag making it more readable
+ *
+ * @param {tag} string - Tag
+ * @returns {string}
+ */
+export function parseTag(tag: string) {
+    return tag
+        .replace(new RegExp(`${ANKI.BASE_CATEGORY_TAG}`, "g"), "")
+        .replace(new RegExp('^::+|::+$', 'g'), '')
+        .replace(/["_"]/g, " ")
+        .replace(/::/g, " → ")
+
+}
+
 /**
  * Process the card tags, including minor string-based adjustments and obtaining the tags of interest to be used in the card grid
  *
@@ -94,6 +110,6 @@ export function sortCardsByTags(cards: BasicCardInfo[]) {
         const comparison = a.tagsOfInterest[0].join(" → ").localeCompare(b.tagsOfInterest[0].join(" → "))
         return comparison
     })
-
+    
     return processedCards as BasicCardInfoWithTagsOfInterest[]
 }

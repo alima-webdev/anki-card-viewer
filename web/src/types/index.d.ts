@@ -26,7 +26,7 @@ declare global {
         tagsOfInterest: string[][],
     }
     type QueryResults = {
-        cardsBasicInfo: BasicCardInfo[], pages: BasicCardInfo[][]
+        cards: BasicCardInfo[], totalPages: number
     }
 }
 export { };
