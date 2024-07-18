@@ -108,7 +108,6 @@ export function CardGridComponent({ paginationSignal }) {
                         {/* Card */}
                         <Card className={(isSuspended ? "bg-gray-100 text-muted-foreground" : "") + " flex flex-col cursor-pointer"} data-id={cardId} data-suspended={isSuspended}>
                             <CardHeader>
-                                {cardId}
                                 <div class="flex items-center">
                                     {/* Tag and Popover */}
                                     <div className="flex-1 text-xs text-left text-muted-foreground">
