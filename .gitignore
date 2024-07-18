@@ -132,3 +132,4 @@ package-lock.json
 # CUSTOM
 /__pycache__/
 .DS_Store
+backup
