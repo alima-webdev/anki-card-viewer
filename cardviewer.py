@@ -6,9 +6,9 @@ from aqt.qt import (
     QDialog,
     QUrl,
     QWebEngineView,
-    pyqtSignal,
+    pyqtSignal
 )
-from aqt import QSplitter, QWebChannel, QWidget, mw, editor
+from aqt import QSize, QSplitter, QWebChannel, QWidget, mw, editor, QApplication
 from aqt.editor import Editor, EditorMode
 from .utils import getCardsInfo
 from .hooks import Backend
@@ -16,7 +16,6 @@ from .consts import ADDON_NAME, HOST, PORT, BASE_TAG
 from anki.hooks import addHook
 
 from .devtools import log
-
 
 class CardViewerDialog(QDialog):
     editor: Editor
@@ -60,22 +59,29 @@ class CardViewerDialog(QDialog):
             self,
             editor_mode=EditorMode.EDIT_CURRENT,
         )
-
         self.editorWidget.setMinimumWidth(200)
         self.editorWidget.setMaximumWidth(400)
-
+        
         self.splitter.insertWidget(1, self.webview)
         self.splitter.insertWidget(2, self.editorWidget)
+
+        self.splitter.setStretchFactor(1, 4)
+        self.splitter.setStretchFactor(2, 1)
+        
         self.layout.addWidget(self.splitter)
         self.setLayout(self.layout)
 
         # Connect signal for resizing
         self.resized.connect(self.resizeWebView)
+        
+        # Resize the window
+        self.resize(1439, 800)
 
     # Signal emitted when the dialog is resized
     resized = pyqtSignal()
 
     def editNote(self, noteId, cardId):
+        
         # Set the last card and node ids to be used in the callback function
         if('editorCardId' in self.__dict__):
             self.editorLastCardId = self.editorCardId

@@ -9,14 +9,16 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
+import { EllipsisIcon } from "lucide-react"
+import { Suspense } from "preact/compat"
+import { paginationSignal } from "../"
 
 /**
  * Render the pagination component
  *
- * @param {paginationSignal} signal - Pagination signal used to determine the current page and total number of pages
  * @returns {Component}
  */
-export function PaginationComponent({ paginationSignal }) {
+export function PaginationComponent() {
     // Get the current page and total number of pages from the signal
     const { current, total } = paginationSignal.value
 
@@ -28,68 +30,83 @@ export function PaginationComponent({ paginationSignal }) {
     const goToPage = (page: number) => {
         paginationSignal.value = { current: page, total: paginationSignal.value.total }
     }
-    
+
     return (
-        <PaginationElement>
-            <PaginationContent>
-                {(current > 0 ?
-                    <PaginationItem>
-                        <PaginationPrevious href="#" onClick={() => { goToPage(current - 1) }} />
-                    </PaginationItem>
-                    : "")}
+        <Suspense fallback={
+            <PaginationElement>
+                <PaginationContent>
 
-                {/* First */}
-                {(current > 1 ?
-                    <>
+                    {/* Current */}
+                    <PaginationItem>
+                        <PaginationLink isActive>
+                            <EllipsisIcon></EllipsisIcon>
+                        </PaginationLink>
+                    </PaginationItem>
+
+                </PaginationContent>
+            </PaginationElement>
+        }>
+            <PaginationElement>
+                <PaginationContent>
+                    {(current > 0 ?
                         <PaginationItem>
-                            <PaginationLink href="#" onClick={() => { goToPage(0) }}>{1}</PaginationLink>
+                            <PaginationPrevious href="#" onClick={() => { goToPage(current - 1) }} />
                         </PaginationItem>
-                        {(current > 2 ?
+                        : "")}
+
+                    {/* First */}
+                    {(current > 1 ?
+                        <>
                             <PaginationItem>
-                                <PaginationEllipsis />
+                                <PaginationLink href="#" onClick={() => { goToPage(0) }}>{1}</PaginationLink>
                             </PaginationItem>
-                            : "")}
-                    </>
-                    : "")}
+                            {(current > 2 ?
+                                <PaginationItem>
+                                    <PaginationEllipsis />
+                                </PaginationItem>
+                                : "")}
+                        </>
+                        : "")}
 
-                {/* Previous */}
-                {(current > 0 ?
-                    <PaginationItem>
-                        <PaginationLink href="#" onClick={() => { goToPage(current - 1) }}>{current}</PaginationLink>
-                    </PaginationItem>
-                    : "")}
-
-                {/* Current */}
-                <PaginationItem>
-                    <PaginationLink href="#" isActive>{current + 1}</PaginationLink>
-                </PaginationItem>
-
-                {/* Next */}
-                {(current < total - 1 ?
-                    <PaginationItem>
-                        <PaginationLink href="#" onClick={() => { goToPage(current + 1) }}>{current + 2}</PaginationLink>
-                    </PaginationItem>
-                    : "")}
-
-                {/* Last */}
-                {(current < total - 2 ?
-                    <>
-                        {(current < total - 3 ?
-                            <PaginationItem>
-                                <PaginationEllipsis />
-                            </PaginationItem>
-                            : "")}
+                    {/* Previous */}
+                    {(current > 0 ?
                         <PaginationItem>
-                            <PaginationLink href="#" onClick={() => { goToPage(total - 1) }}>{total}</PaginationLink>
+                            <PaginationLink href="#" onClick={() => { goToPage(current - 1) }}>{current}</PaginationLink>
                         </PaginationItem>
-                    </>
-                    : "")}
-                {(current < total - 1 ?
+                        : "")}
+
+                    {/* Current */}
                     <PaginationItem>
-                        <PaginationNext href="#" onClick={() => { goToPage(current + 1) }} />
+                        <PaginationLink href="#" isActive>{current + 1}</PaginationLink>
                     </PaginationItem>
-                    : "")}
-            </PaginationContent>
-        </PaginationElement>
+
+                    {/* Next */}
+                    {(current < total - 1 ?
+                        <PaginationItem>
+                            <PaginationLink href="#" onClick={() => { goToPage(current + 1) }}>{current + 2}</PaginationLink>
+                        </PaginationItem>
+                        : "")}
+
+                    {/* Last */}
+                    {(current < total - 2 ?
+                        <>
+                            {(current < total - 3 ?
+                                <PaginationItem>
+                                    <PaginationEllipsis />
+                                </PaginationItem>
+                                : "")}
+                            <PaginationItem>
+                                <PaginationLink href="#" onClick={() => { goToPage(total - 1) }}>{total}</PaginationLink>
+                            </PaginationItem>
+                        </>
+                        : "")}
+                    {(current < total - 1 ?
+                        <PaginationItem>
+                            <PaginationNext href="#" onClick={() => { goToPage(current + 1) }} />
+                        </PaginationItem>
+                        : "")}
+                </PaginationContent>
+            </PaginationElement>
+        </Suspense>
     )
 }

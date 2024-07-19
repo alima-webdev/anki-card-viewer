@@ -12,7 +12,7 @@
             "pythonPath": "/opt/homebrew/bin/python3", // <- Path to your python binary
             "program": "/Users/alexlima-nsu/Downloads/anki-source/anki/qt/runanki.py", // <- Path to your runanki location
             "cwd": "${workspaceRoot}",
-            "env": {"DEVELOPMENT": "1"},
+            "env": {"DEVELOPMENT": "1", "QTWEBENGINE_REMOTE_DEBUGGING": "9000"},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [
                 "RedirectOutput"

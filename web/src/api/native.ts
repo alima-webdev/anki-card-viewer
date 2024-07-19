@@ -5,7 +5,6 @@ import { getContent, processTags } from "./utils"
 
 // Devtools
 import { log } from "../devtools"
-import { searchQuery } from "../index";
 import { currentCards } from "../components/cardgrid";
 
 /**

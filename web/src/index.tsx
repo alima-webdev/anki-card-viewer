@@ -2,7 +2,8 @@
 // Preact
 import { render } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
-import { effect, useSignal, signal } from '@preact/signals';
+import { effect, signal } from '@preact/signals';
+import { Suspense } from 'preact/compat';
 
 // Styles
 import './styles/styles.css';
@@ -14,21 +15,24 @@ import { SearchComponent } from "./components/search"
 
 // Internal
 import { ANKI } from './globals';
-import { initAPI, performQuery, getCardsInfo, Connector } from './api/api';
+import { initAPI, performQuery } from './api/api';
 
 // Devtools
 import { log } from './devtools';
-import { Skeleton } from '@/components/ui/skeleton';
-import { EllipsisIcon } from 'lucide-react';
-import { Pagination as PaginationElement, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
 
+// Signals
 export let searchQuery = signal("")
-// - Pagination
 export let paginationSignal = signal({ current: 0, total: 1 })
 export let loading = signal(true)
+export let triggerSignalChange = signal(true)
 
 effect(() => {
 	const performEffect = async () => {
+
+		console.log("EFF")
+		const forceSignalChange = triggerSignalChange.value
+
+		loading.value = true
 
 		// Get the current cards in the page
 		let { cards, totalPages } = await performQuery(searchQuery.value, paginationSignal.value.current)
@@ -41,7 +45,6 @@ effect(() => {
 
 		// Change the loading state
 		if (loading.value === true) loading.value = false
-		// })
 
 	}
 	performEffect()
@@ -54,6 +57,8 @@ effect(() => {
  */
 export function App() {
 
+	// const [loading, setLoading] = useState(true)
+
 	// Init the signals and start the API
 	useEffect(() => {
 		const performEffect = async () => {
@@ -63,75 +68,25 @@ export function App() {
 		performEffect()
 	}, [])
 
-	// Signals
-	// - Search
-	// let searchResults = useSignal([])
-	// let resultsPages = useSignal([])
-	// let currentCards = useSignal([])
-	// let currentCards = []
-
-
-	// - Modifiers
-	// -- Search
-
-	// -- Pagination
-	// effect(() => {
-	// 	const performEffect = async () => {
-	// 		// Get full card info for the cards to be shown in the page
-	// 		// Get the search results
-	// 		let { cards, totalPages } = await performQuery(searchQuery.value, paginationSignal.value.current)
-	// 		currentCards = cards
-	// 		// paginationSignal.value = {current: paginationSignal.value.current, total: totalPages }
-	// 	}
-	// 	performEffect()
-	// })
-
 	// Event: Search Form Submission
 	const querySubmitEvent = (event: SubmitEvent) => {
 		// Get the form data
 		const data = new FormData(event.currentTarget as HTMLFormElement);
 		// Save the query string to the searchQuery signal, which will trigger the query process
 		searchQuery.value = data.get("query") as string
+		ANKI.CARDS_PER_PAGE = parseInt(data.get("cardsPerPage") as string)
+		triggerSignalChange.value = !triggerSignalChange.value
+		
 		event.preventDefault()
 	}
 
-	// const [loading, setLoading] = useState(true)
-
 	return (
 		<main className="grid grid-rows gap-4 m-4">
-			{(loading.value ? (
-				<>
-					<SearchComponent onSubmit={querySubmitEvent} />
-					{/* Card Grid Skeleton */}
-					<div className="grid grid-cols-3 gap-4">
-						<Skeleton className="h-[125px] rounded-xl" />
-						<Skeleton className="h-[125px] rounded-xl" />
-						<Skeleton className="h-[125px] rounded-xl" />
-						<Skeleton className="h-[125px] rounded-xl" />
-						<Skeleton className="h-[125px] rounded-xl" />
-						<Skeleton className="h-[125px] rounded-xl" />
-					</div>
-					{/* Pagination Skeleton */}
-					<PaginationElement>
-						<PaginationContent>
-
-							{/* Current */}
-							<PaginationItem>
-								<PaginationLink isActive>
-									<EllipsisIcon></EllipsisIcon>
-								</PaginationLink>
-							</PaginationItem>
-							
-						</PaginationContent>
-					</PaginationElement>
-				</>
-			) : (
-				<>
-					<SearchComponent onSubmit={querySubmitEvent} />
-					<CardGridComponent paginationSignal={paginationSignal} />
-					<PaginationComponent paginationSignal={paginationSignal} />
-				</>
-			))}
+			<Suspense fallback={<div>LOADING</div>}>
+				<SearchComponent onSubmit={querySubmitEvent} />
+				<CardGridComponent />
+				<PaginationComponent />
+			</Suspense>
 		</main>
 	);
 }
