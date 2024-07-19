@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build-web": "cd web && npm run build",
+    "release": "npm run build-web && release-it",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
