@@ -70,6 +70,8 @@ export function CardGridComponent() {
 
     // Card click event
     let cardClickEvent = (event: MouseEvent) => {
+        // Do nothing if clicked on elements that already have onclick setup
+        if((event.target as HTMLElement).closest('.action')) return;
         let cardId = parseInt((event.currentTarget as HTMLElement).getAttribute('data-id'))
         editCard(cardId)
     }
@@ -96,8 +98,6 @@ export function CardGridComponent() {
             </div>
         }>
             <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {window.MEDIA_SERVER_URL}
-            
                 {(cards.length > 0 ? cards.map(({ cardId, answer, isSuspended, tags, tagsOfInterest = [] }) => {
 
                     // Card category
@@ -124,14 +124,14 @@ export function CardGridComponent() {
                             {/* Category Header */}
                             {(insertCategoryHeader ?
                                 <div className="md:col-span-3 lg:col-span-4">
-                                    <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+                                    <h1 className="mt-3 text-2xl font-semibold tracking-tight">
                                         {currentCategory}
                                     </h1>
                                 </div>
                                 : "")}
 
                             {/* Card */}
-                            <Card className={(isSuspended ? "suspended" : "") + " flex flex-col cursor-pointer"} data-id={cardId} data-suspended={isSuspended}>
+                            <Card className={(isSuspended ? "suspended" : "") + " flex flex-col cursor-pointer"} data-id={cardId} data-suspended={isSuspended} onClick={cardClickEvent}>
                                 <CardHeader>
                                     <div class="flex items-center">
                                         {/* Tag and Popover */}
@@ -139,9 +139,9 @@ export function CardGridComponent() {
                                             {tagsOfInterestParsed[0]}
                                         </div>
                                         {/* {(tagsOfInterest.length > 1 ? */}
-                                        <Popover>
+                                        <Popover className="action">
                                             <PopoverTrigger>
-                                                <Button size="icon" variant="ghost">
+                                                <Button size="icon" variant="ghost" className="action">
                                                     <TagsIcon className="h-4 w-4 text-muted-foreground"></TagsIcon>
                                                 </Button>
                                             </PopoverTrigger>
@@ -175,11 +175,11 @@ export function CardGridComponent() {
 
                                 </CardHeader>
                                 {/* Content */}
-                                <CardContent className="">
-                                    <div onClick={cardClickEvent} data-id={cardId} dangerouslySetInnerHTML={{ __html: parseCardContent(answer) }}></div>
+                                <CardContent>
+                                    <div dangerouslySetInnerHTML={{ __html: parseCardContent(answer) }}></div>
                                 </CardContent>
                                 {/* Footer (suspension status switch) */}
-                                <CardFooter className="flex flex-1 flex-col items-start justify-end">
+                                <CardFooter className="flex flex-1 flex-col items-start justify-end action">
                                     <div className="flex items-center space-x-2">
                                         <Switch id={`suspended-${cardId}`} checked={isSuspended} onCheckedChange={() => { suspendedCheckChanged(`suspended-${cardId}`) }} data-id={cardId} data-suspended={isSuspended} />
                                         <Label htmlFor={`suspended-${cardId}`} className="text-muted-foreground">Suspended</Label>

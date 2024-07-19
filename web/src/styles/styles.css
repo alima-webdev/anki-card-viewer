@@ -78,16 +78,14 @@
 
 /* CUSTOM */
 .cloze {
-    &:before {
-        content: "[";
-    }
-    &:after {
-        content: "]";
-    }
-    font-weight: bold;
+    @apply bg-gray-200 rounded-sm py-0.5 px-2;
 }
 .suspended {
-    @apply bg-gray-100 text-muted-foreground
+    @apply bg-gray-100 text-muted-foreground;
+
+    .cloze {
+        @apply bg-gray-300;
+    }
 }
 
 /* @media (prefers-color-scheme: dark) {
