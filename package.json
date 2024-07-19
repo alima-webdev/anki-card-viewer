@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build-web": "cd web && npm run build",
+    "git-push": "git add ./ && git commit -m 'Release' && git push origin main",
     "release": "npm run build-web && release-it",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -18,7 +18,7 @@ export const ANKI = {
     BASE_CATEGORY_TAG: "#AK_Step2_v12::#OME::01_Medicine"
     // BASE_CATEGORY_TAG: "#AK_Step2_v12"
 }
-
+ 
 // Export
 export default {
     ANKI
