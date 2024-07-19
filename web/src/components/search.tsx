@@ -7,6 +7,10 @@ import { Search } from "lucide-react";
 import { ANKI } from "../globals";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRef } from "preact/hooks";
+import { performSearch } from "../signals";
+
+// Devtools
+import { isDevelopment } from "../devtools";
 
 /**
  * Render the search / query component
@@ -14,9 +18,28 @@ import { useRef } from "preact/hooks";
  * @param {onSubmit} Function - Form submission function
  * @returns {Component}
  */
-export function SearchComponent({ onSubmit }) {
+export function SearchComponent() {
 
     const formRef = useRef(null)
+
+    // Event: Search Form Submission
+    const onSubmit = (event: SubmitEvent) => {
+        // Get the form data
+        const data = new FormData(event.currentTarget as HTMLFormElement);
+
+        const query = data.get("query") as string
+        const cardsPerPage = parseInt(data.get("cardsPerPage") as string)
+
+        if (isDevelopment()) {
+            console.info("Fn: Perform Search")
+            console.info("Query: ", query, "  |  Cards Per Page: ", cardsPerPage)
+        }
+
+        // Save the query string to the searchQuery signal, which will trigger the query process
+        performSearch(query, cardsPerPage)
+
+        event.preventDefault()
+    }
 
     const cardsPerPageChange = () => {
         const form = (formRef.current as HTMLFormElement)

@@ -10,3 +10,7 @@ import { terminal } from 'virtual:terminal'
 export function log(args) {
     terminal.log(args.replace("#", "!").replace("&", "n"))
 }
+
+export function isDevelopment() {
+    return import.meta.env.MODE == "development"
+}

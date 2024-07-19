@@ -20,10 +20,7 @@ import { ANKI } from '../globals';
 import { parseTag } from '../api/utils';
 import { Suspense } from 'preact/compat';
 import { Skeleton } from '@/components/ui/skeleton';
-// import { searchQuery } from '../index';
-// import { useState } from 'preact/hooks';
-
-export const currentCards = signal([])
+import { currentCards, refreshCardGrid, willRefreshCardGrid } from '../signals';
 
 /**
  * Render the card grid component
@@ -34,8 +31,12 @@ export const currentCards = signal([])
  */
 export function CardGridComponent() {
 
+    // DO NOT REMOVE
+    // Use the signal to refresh the component
+    const refresh = willRefreshCardGrid.value
+
     // Card information from signal
-    let cards = [...currentCards.value]
+    let cards = [...currentCards]
 
     /**
      * Toggle the suspend state of the card when the user hits the switch button
@@ -58,14 +59,16 @@ export function CardGridComponent() {
         }
 
         // Update the currentCards signal to trigger a rerender
-        let newCards = [...cards]
-        const arrayIndex = newCards.findIndex(card => { return card.cardId == cardId })
-        if (arrayIndex >= 0 && newCards[arrayIndex]) {
-            newCards[arrayIndex].isSuspended = !isSuspended
-        }
-        currentCards.value = [...newCards]
+        const arrayIndex = currentCards.findIndex(card => { return card.cardId == cardId })
+
+        // Set the signal variables
+        currentCards[arrayIndex].isSuspended = !isSuspended
+
+        // Refresh the card grid
+        refreshCardGrid()
     }
 
+    // Card click event
     let cardClickEvent = (event: MouseEvent) => {
         let cardId = parseInt((event.currentTarget as HTMLElement).getAttribute('data-id'))
         editCard(cardId)

@@ -14,3 +14,6 @@ class bcolors:
 def log(object):
     if(os.environ["DEVELOPMENT"] == "1"):
         print(f"{bcolors.HEADER}{object}{bcolors.ENDC}")
+        
+def isDevelopment():
+    return os.environ.get("DEVELOPMENT", "0") == "1"

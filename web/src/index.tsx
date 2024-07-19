@@ -18,37 +18,41 @@ import { ANKI } from './globals';
 import { initAPI, performQuery } from './api/api';
 
 // Devtools
-import { log } from './devtools';
+import { isDevelopment, log } from './devtools';
+import { paginationInfo, performSearch } from './signals';
 
 // Signals
-export let searchQuery = signal("")
-export let paginationSignal = signal({ current: 0, total: 1 })
-export let loading = signal(true)
-export let triggerSignalChange = signal(true)
+// export let searchQuery = signal("")
+// export let paginationSignal = signal({ current: 0, total: 1 })
+// export let refreshPagination = signal(false)
+// export let loading = signal(true)
+// export let triggerSignalChange = signal(true)
 
-effect(() => {
-	const performEffect = async () => {
+// effect(() => {
+// 	const performEffect = async () => {
 
-		console.log("EFF")
-		const forceSignalChange = triggerSignalChange.value
+// 		console.log("EFF")
+// 		const forceSignalChange = triggerSignalChange.value
 
-		loading.value = true
+// 		loading.value = true
 
-		// Get the current cards in the page
-		let { cards, totalPages } = await performQuery(searchQuery.value, paginationSignal.value.current)
-		currentCards.value = cards
+// 		// Get the current cards in the page
+// 		let { cards, totalPages } = await performQuery(searchQuery.value, paginationSignal.value.current)
+// 		currentCards.value = cards
 
-		// Setup the pagination signal
-		let currentPage = (paginationSignal.value.current > totalPages ? totalPages : paginationSignal.value.current)
-		paginationSignal.value.current = currentPage
-		paginationSignal.value.total = totalPages
+// 		// Setup the pagination signal
+// 		let currentPage = (paginationSignal.value.current > totalPages ? totalPages : paginationSignal.value.current)
+// 		paginationSignal.value.current = currentPage
+// 		paginationSignal.value.total = totalPages
 
-		// Change the loading state
-		if (loading.value === true) loading.value = false
+// 		refreshPagination.value = !refreshPagination.value
 
-	}
-	performEffect()
-})
+// 		// Change the loading state
+// 		if (loading.value === true) loading.value = false
+
+// 	}
+// 	performEffect()
+// })
 
 /**
  * Main app component
@@ -57,38 +61,26 @@ effect(() => {
  */
 export function App() {
 
-	// const [loading, setLoading] = useState(true)
+    // const [loading, setLoading] = useState(true)
 
-	// Init the signals and start the API
-	useEffect(() => {
-		const performEffect = async () => {
-			await initAPI()
-			searchQuery.value = ANKI.DEFAULT_SEARCH_QUERY
-		}
-		performEffect()
-	}, [])
+    // Init the signals and start the API
+    useEffect(() => {
+        const performEffect = async () => {
+            await initAPI()
+            performSearch(ANKI.DEFAULT_SEARCH_QUERY, ANKI.CARDS_PER_PAGE)
+        }
+        performEffect()
+    }, [])
 
-	// Event: Search Form Submission
-	const querySubmitEvent = (event: SubmitEvent) => {
-		// Get the form data
-		const data = new FormData(event.currentTarget as HTMLFormElement);
-		// Save the query string to the searchQuery signal, which will trigger the query process
-		searchQuery.value = data.get("query") as string
-		ANKI.CARDS_PER_PAGE = parseInt(data.get("cardsPerPage") as string)
-		triggerSignalChange.value = !triggerSignalChange.value
-		
-		event.preventDefault()
-	}
-
-	return (
-		<main className="grid grid-rows gap-4 m-4">
-			<Suspense fallback={<div>LOADING</div>}>
-				<SearchComponent onSubmit={querySubmitEvent} />
-				<CardGridComponent />
-				<PaginationComponent />
-			</Suspense>
-		</main>
-	);
+    return (
+        <main className="grid grid-rows gap-4 m-4">
+            <Suspense fallback={<div>LOADING</div>}>
+                <SearchComponent />
+                <CardGridComponent />
+                <PaginationComponent />
+            </Suspense>
+        </main>
+    );
 }
 
 // Render the preact app

@@ -1,5 +1,4 @@
 import json
-import os
 from aqt.qt import (
     Qt,
     QVBoxLayout,
@@ -8,14 +7,13 @@ from aqt.qt import (
     QWebEngineView,
     pyqtSignal
 )
-from aqt import QSize, QSplitter, QWebChannel, QWidget, mw, editor, QApplication
+from aqt import QSplitter, QWebChannel, QWidget, mw
 from aqt.editor import Editor, EditorMode
 from .utils import getCardsInfo
 from .hooks import Backend
 from .consts import ADDON_NAME, HOST, PORT, BASE_TAG
-from anki.hooks import addHook
 
-from .devtools import log
+from .devtools import isDevelopment, log
 
 class CardViewerDialog(QDialog):
     editor: Editor
@@ -96,8 +94,30 @@ class CardViewerDialog(QDialog):
         # Callback function for when the editing is done
         def editNoteCallback():
             if('editorLastCardId' in self.__dict__):
-                card = getCardsInfo([self.editorLastCardId], BASE_TAG)
-                self.backend.triggerReload.emit(json.dumps(card[0]))
+                card = getCardsInfo([self.editorLastCardId], BASE_TAG)[0]
+                # log("SAVED")
+                # log(card[0]["cardId"])
+                # log(card[0]["answer"])
+                
+                # card = {}
+                # card["cardId"] = self.editorLastCardId
+                # card["question"] = self.editor.note.fields[0]
+                # card["answer"] = self.editor.note.fields[1]
+                # card["tags"] = self.editor.note.tags
+                # log("SAVED2")
+                # log(card["cardId"])
+                # log(card["answer"])
+                # log("---------------")
+                # log("      ")
+                
+                # tagsOfInterest = []
+                # for tag in card["tags"]:
+                #     if BASE_TAG in tag:
+                #         tagsOfInterest.append(tag)
+                
+                # card["tagsOfInterest"] = tagsOfInterest
+                
+                self.backend.triggerReload.emit(json.dumps(card))
             
         # Event binding
         self.editor.call_after_note_saved(editNoteCallback)
@@ -109,7 +129,7 @@ class CardViewerDialog(QDialog):
     # Navigate to the game interface URL
     def navigate(self, path):
         url = f"""http://{HOST}:{PORT}/_addons/{ADDON_NAME}/{path}"""
-        if os.environ.get("DEVELOPMENT", "0") == "1":
+        if isDevelopment():
             url = "http://localhost:5173/index.html"
 
         self.webview.load(QUrl(url))

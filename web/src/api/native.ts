@@ -4,8 +4,8 @@ import { ANKI } from "../globals";
 import { getContent, processTags } from "./utils"
 
 // Devtools
-import { log } from "../devtools"
-import { currentCards } from "../components/cardgrid";
+import { isDevelopment, log } from "../devtools"
+import { currentCards, refreshCardGrid } from "../signals";
 
 /**
  * Variable used to communicate with the backend API (QWebChannel backend)
@@ -25,16 +25,22 @@ export async function initConnection() {
 
             // Connect to a signal:
             channel.objects.backend.triggerReload.connect(function (card) {
-                // This callback will be invoked whenever the signal is emitted on the C++/QML side.
+
                 let newCard = JSON.parse(card)
-                let updatedCards = [...currentCards.value]
-                const arrayIndex = updatedCards.findIndex(card => {
+
+                if (isDevelopment()) {
+                    console.info("Fn: Native - triggerReload (card info edited)")
+                    console.info(newCard.cardId, newCard.answer)
+                }
+                const arrayIndex = currentCards.findIndex(card => {
                     return card.cardId == newCard.cardId
                 })
-                if(arrayIndex >= 0) {
-                    updatedCards[arrayIndex].question = newCard.question
-                    updatedCards[arrayIndex].answer = newCard.answer
-                    currentCards.value = [...updatedCards]
+                if (arrayIndex >= 0) {
+                    console.warn("change card info")
+                    currentCards[arrayIndex].question = newCard.question
+                    currentCards[arrayIndex].answer = newCard.answer
+                    // currentCards = [...updatedCards]
+                    refreshCardGrid()
                 }
             });
 
@@ -53,15 +59,19 @@ export async function initConnection() {
  * @param {query} string - Search criteria
  * @returns {Promise<BasicCardInfo[]>}
  */
-export async function getCardsFromQuery(query: string, currentPage: number): Promise<QueryResults> {
-    // log("getCardsFromQuery")
+export async function getCardsFromQuery(query: string, currentPage: number, cardsPerPage: number): Promise<QueryResults> {
+    let payload = {
+        query: query,
+        currentPage: currentPage,
+        cardsPerPage: cardsPerPage,
+        baseTag: ANKI.BASE_CATEGORY_TAG
+    }
+    if (isDevelopment()) {
+        console.info("Fn: Native - getCardsFromQuery")
+        console.info(payload)
+    }
     let queryResults = await new Promise((resolve, reject) => {
-        nativeBackend.getQueryPage(JSON.stringify({
-            query: query,
-            currentPage: currentPage,
-            cardsPerPage: ANKI.CARDS_PER_PAGE,
-            baseTag: ANKI.BASE_CATEGORY_TAG
-        }), (response) => {
+        nativeBackend.getQueryPage(JSON.stringify(payload), (response) => {
             resolve(JSON.parse(response))
         })
     }) as QueryResults

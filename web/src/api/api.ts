@@ -31,8 +31,8 @@ export async function initAPI() {
  * @param {query} string - Search criteria
  * @returns {QueryResults}
  */
-export async function performQuery(query: string = ANKI.DEFAULT_SEARCH_QUERY, currentPage: number) {
-    return (await Connector.getCardsFromQuery(query, currentPage))
+export async function performQuery(query: string, currentPage: number, cardsPerPage: number) {
+    return (await Connector.getCardsFromQuery(query, currentPage, cardsPerPage))
 }
 
 /**
