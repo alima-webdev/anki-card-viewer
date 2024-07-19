@@ -12,7 +12,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
     
 def log(object):
-    if(os.environ["DEVELOPMENT"] == "1"):
+    if(isDevelopment()):
         print(f"{bcolors.HEADER}{object}{bcolors.ENDC}")
         
 def isDevelopment():

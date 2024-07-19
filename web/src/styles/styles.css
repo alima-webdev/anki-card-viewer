@@ -78,5 +78,26 @@
 
 /* CUSTOM */
 .cloze {
+    &:before {
+        content: "[";
+    }
+    &:after {
+        content: "]";
+    }
     font-weight: bold;
 }
+.suspended {
+    @apply bg-gray-100 text-muted-foreground
+}
+
+/* @media (prefers-color-scheme: dark) {
+    body {
+        @apply dark bg-black;
+    }
+    .suspended {
+        @apply bg-black text-muted;
+        .card-tag {
+            @apply text-muted;
+        }
+    }
+} */

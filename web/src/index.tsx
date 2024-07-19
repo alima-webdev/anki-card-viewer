@@ -73,7 +73,7 @@ export function App() {
     }, [])
 
     return (
-        <main className="grid grid-rows gap-4 m-4">
+        <main className="grid grid-rows gap-4 m-4 dark:dark">
             <Suspense fallback={<div>LOADING</div>}>
                 <SearchComponent />
                 <CardGridComponent />

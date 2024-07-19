@@ -7,7 +7,7 @@ from aqt.qt import (
     QWebEngineView,
     pyqtSignal
 )
-from aqt import QSplitter, QWebChannel, QWidget, mw
+from aqt import QSettings, QSplitter, QWebChannel, QWebEnginePage, QWebEngineSettings, QWidget, mw
 from aqt.editor import Editor, EditorMode
 from .utils import getCardsInfo
 from .hooks import Backend
@@ -34,9 +34,9 @@ class CardViewerDialog(QDialog):
         # Splitter
         self.splitter = QSplitter()
         self.splitter.setOrientation(Qt.Orientation.Horizontal)
-        self.splitter.setStyleSheet(
-            "QSplitter::handle {  image: url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='); }"
-        )
+        # self.splitter.setStyleSheet(
+        #     "QSplitter::handle {  image: url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='); }"
+        # )
 
         # Webview
         self.webview = QWebEngineView()
@@ -135,6 +135,9 @@ class CardViewerDialog(QDialog):
         self.webview.load(QUrl(url))
 
         self.webview.page().setWebChannel(self.channel)
+        # self.webview.reques(self.webview.page(), QWebEnginePage.PermissionType.ClipboardAccess)
+        settings = self.webview.page().profile().settings()
+        settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, True)
         return False
 
     # Resize the QWebEngineView to match the dialog size

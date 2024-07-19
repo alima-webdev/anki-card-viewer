@@ -17,7 +17,7 @@ import { suspend, unsuspend, editCard } from '../api/api';
 // Devtools
 import { log } from '../devtools';
 import { ANKI } from '../globals';
-import { parseTag } from '../api/utils';
+import { parseCardContent, parseTag } from '../api/utils';
 import { Suspense } from 'preact/compat';
 import { Skeleton } from '@/components/ui/skeleton';
 import { currentCards, refreshCardGrid, willRefreshCardGrid } from '../signals';
@@ -74,6 +74,13 @@ export function CardGridComponent() {
         editCard(cardId)
     }
 
+    // Copy the clicked tag to the clipboard
+    const copyTagToClipboard = (tag) => {
+        console.log("copyTagToClipboard")
+        console.log(tag)
+        navigator.clipboard.writeText(tag);
+    }
+
     // Start the current category variable
     let currentCategory = ""
 
@@ -89,14 +96,17 @@ export function CardGridComponent() {
             </div>
         }>
             <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {window.MEDIA_SERVER_URL}
+            
                 {(cards.length > 0 ? cards.map(({ cardId, answer, isSuspended, tags, tagsOfInterest = [] }) => {
 
                     // Card category
                     let category = ""
+                    let tagsOfInterestParsed = []
                     if (tagsOfInterest.length == 0) {
                         category = "Miscellaneous"
                     } else {
-                        tagsOfInterest = tagsOfInterest.map(tag => {
+                        tagsOfInterestParsed = tagsOfInterest.map(tag => {
                             return parseTag(tag)
                         })
                         category = tagsOfInterest[0].replace(ANKI.BASE_CATEGORY_TAG, "").split("::").filter(Boolean)[0].replace("_", " ")
@@ -121,28 +131,43 @@ export function CardGridComponent() {
                                 : "")}
 
                             {/* Card */}
-                            <Card className={(isSuspended ? "bg-gray-100 text-muted-foreground" : "") + " flex flex-col cursor-pointer"} data-id={cardId} data-suspended={isSuspended}>
+                            <Card className={(isSuspended ? "suspended" : "") + " flex flex-col cursor-pointer"} data-id={cardId} data-suspended={isSuspended}>
                                 <CardHeader>
                                     <div class="flex items-center">
                                         {/* Tag and Popover */}
-                                        <div className="flex-1 text-xs text-left text-muted-foreground">
-                                            {tagsOfInterest[0]}
+                                        <div className="flex-1 text-xs text-left text-muted-foreground card-tag">
+                                            {tagsOfInterestParsed[0]}
                                         </div>
                                         {/* {(tagsOfInterest.length > 1 ? */}
                                         <Popover>
                                             <PopoverTrigger>
                                                 <Button size="icon" variant="ghost">
-                                                    <TagsIcon className="h-4 w-4"></TagsIcon>
+                                                    <TagsIcon className="h-4 w-4 text-muted-foreground"></TagsIcon>
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-100">
+                                                {/* Tags of Interest */}
                                                 {(tagsOfInterest.length > 0 ? (
                                                     <>
-                                                        <div>{tagsOfInterest.map(tag => (<div className="mb-1 text-xs">{parseTag(tag)}</div>))}</div>
+                                                        <div>
+                                                            {tagsOfInterest.map(tag => {
+                                                                return (
+                                                                    <a className="mb-1 text-xs cursor-pointer" onClick={() => { copyTagToClipboard(tag) }}>
+                                                                        {parseTag(tag)}
+                                                                    </a>
+                                                                )
+                                                            })}
+                                                        </div>
                                                         <Separator orientation="horizontal" className="my-2" />
                                                     </>
                                                 ) : "")}
-                                                <div>{tags.map(tag => (<div className="mb-1 text-xs text-muted-foreground">{parseTag(tag)}</div>))}</div>
+                                                {/* Other Tags */}
+                                                <div>
+                                                    {tags.map(tag => (
+                                                        <div className="mb-1 text-xs text-muted-foreground cursor-pointer"  onClick={() => { copyTagToClipboard(tag) }}>
+                                                            {parseTag(tag, false)}
+                                                        </div>))}
+                                                </div>
                                             </PopoverContent>
                                         </Popover>
                                         {/* : "")} */}
@@ -151,7 +176,7 @@ export function CardGridComponent() {
                                 </CardHeader>
                                 {/* Content */}
                                 <CardContent className="">
-                                    <div onClick={cardClickEvent} data-id={cardId} dangerouslySetInnerHTML={{ __html: answer }}></div>
+                                    <div onClick={cardClickEvent} data-id={cardId} dangerouslySetInnerHTML={{ __html: parseCardContent(answer) }}></div>
                                 </CardContent>
                                 {/* Footer (suspension status switch) */}
                                 <CardFooter className="flex flex-1 flex-col items-start justify-end">

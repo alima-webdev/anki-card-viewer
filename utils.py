@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 # Anki
 from aqt import mw
 
+from .consts import HOST, PORT
+
 # Devtools
 from .devtools import log
 
@@ -83,6 +85,15 @@ def getSubElementInnerHTML(
 
     # Check if sub_element is found
     if sub_element:
+        
+        # Find all img tags
+        img_tags = soup.find_all('img')
+
+        # Prepend "http://" to src attribute of each img tag
+        for img in img_tags:
+            if img.has_attr('src'):
+                img['src'] = 'http://' + HOST + ":" + str(PORT) + "/" + img['src']
+                
         # Return the inner HTML of the subelement
         return str(sub_element)
     else:
