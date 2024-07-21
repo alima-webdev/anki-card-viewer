@@ -1,7 +1,10 @@
 # Imports
 # External Libraries
+import asyncio
 import json
 import math
+import threading
+import time
 
 # Anki
 from aqt import QObject, pyqtSignal, pyqtSlot
@@ -11,15 +14,19 @@ from aqt import mw
 from .consts import HOOKS_PREFIX, BASE_TAG
 # import consts
 from .utils import (
+    extractTagsOfInterest,
+    getSubElementInnerHTML,
     sortCardsIdsByTags,
     getCardsInfo
 )
 
 # Devtools
 from .devtools import log
+# from .test import testReturn
 
 class Backend(QObject):
-    triggerReload = pyqtSignal(str)
+    finishedEditing = pyqtSignal(str)
+    queryFinished = pyqtSignal(str)
     
     def __init__(self):
         super(Backend, self).__init__()
@@ -29,40 +36,80 @@ class Backend(QObject):
     def getQueryPage(self, options):
         global BASE_TAG
         
+        # Options
         options = json.loads(options)
+        
+        # Make sure all the required information has been given
+        if(options['query'] == None or options['currentPage'] == None or options['cardsPerPage'] == None or options['baseTag'] == None):
+            return json.dumps({})
+        
+        # Required variables
         query = options['query']
-        currentPage = options['currentPage']
-        cardsPerPage = options['cardsPerPage']
+        currentPage = int(options['currentPage'])
+        cardsPerPage = int(options['cardsPerPage'])
         baseTag = options['baseTag']
         
+        # Set the new base tag
         BASE_TAG = baseTag
         
+        # Get card ids
         ids = mw.col.find_cards(query)
-        ids = sorted(ids, key=lambda cid: mw.col.get_card(cid).note().fields[0])
         
-        basicCardInfo = sortCardsIdsByTags(ids, baseTag) # returns {cardId, tagsOfInterest}
+        # Get additional basic information (excluding the answer field)
+        def prepareNote(id):
+            cardInfo = mw.col.get_card(id)
+            note = cardInfo.note()
+            card = {}
+            
+            card = {}
+            card["cardId"] = id
+            card["noteId"] = note.id
+            card["tags"] = note.tags
+            card["tagsOfInterest"] = extractTagsOfInterest(note.tags, baseTag)
+            return card
+        cards = list(map(prepareNote, ids))
         
+        # Order by tags of interest
+        def sortByTagsOfInterest(card):
+            isNone = True
+            field = ""
+            if(len(card["tagsOfInterest"]) > 0):
+                field = card["tagsOfInterest"][0]
+                isNone = False
+            return (isNone, field)
+        cards = sorted(cards, key=sortByTagsOfInterest)
+        
+        # Page index boundaries
         startIndex = currentPage * cardsPerPage
         endIndex = (currentPage + 1) * cardsPerPage
-        if(endIndex > len(basicCardInfo)):
-            endIndex = len(basicCardInfo)
+        if(endIndex > len(cards)):
+            endIndex = len(cards)
         
-        pageCardsIds = list(map(lambda x: x["cardId"], basicCardInfo))
-        
-        cards = getCardsInfo(pageCardsIds[startIndex:endIndex], baseTag)
+        # Get the cards in the page
+        cards = list(cards[startIndex:endIndex])
+        def getCardAnswer(card):
+            card["answer"] = getSubElementInnerHTML(mw.col.get_note(card["noteId"]).fields[0], 'text')
+            return card
+        cards = list(map(getCardAnswer, cards))
         
         returnObject = {}
         returnObject["cards"] = cards
         returnObject["totalPages"] = math.ceil(len(ids) / cardsPerPage)
         
         return json.dumps(returnObject)
+        # self.queryFinished.emit(json.dumps(returnObject))
+        
+        # t2 = time.perf_counter(), time.process_time()
+        # print(f" Real time: {t2[0] - t1[0]:.2f} seconds")
+        # print(f" CPU time: {t2[1] - t1[1]:.2f} seconds")
 
     # Edit Card
     @pyqtSlot(str, result=bool)
-    def editCard(self, cardId):
+    def editCard(self, noteId):
         from .main import editNote
-        noteId = mw.col.get_card(int(cardId)).note()
-        editNote(noteId, int(cardId))
+        log("Fn: editCard")
+        # noteId = mw.col.get_card(int(cardId)).note()
+        editNote(int(noteId))
         return True
 
     # Suspend

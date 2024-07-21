@@ -5,21 +5,22 @@ from aqt.qt import (
     QDialog,
     QUrl,
     QWebEngineView,
-    pyqtSignal
+    pyqtSignal,
+    QApplication
 )
 from aqt import QSettings, QSplitter, QWebChannel, QWebEnginePage, QWebEngineSettings, QWidget, mw
 from aqt.editor import Editor, EditorMode
-from .utils import getCardsInfo
+from .utils import getCardsInfo, getNotesInfo
 from .hooks import Backend
 from .consts import ADDON_NAME, HOST, PORT, BASE_TAG
 
 from .devtools import isDevelopment, log
 
+QApplication.primaryScreen().size()
+
 class CardViewerDialog(QDialog):
     editor: Editor
-    editorCardId: int
     editorNoteId: int
-    editorLastCardId: int
     editorLastNoteId: int
     layout: QVBoxLayout
     splitter: QSplitter
@@ -57,14 +58,15 @@ class CardViewerDialog(QDialog):
             self,
             editor_mode=EditorMode.EDIT_CURRENT,
         )
-        self.editorWidget.setMinimumWidth(200)
-        self.editorWidget.setMaximumWidth(400)
+        # self.editorWidget.setMinimumWidth(200)
+        # self.editorWidget.setMaximumWidth(400)
         
         self.splitter.insertWidget(1, self.webview)
         self.splitter.insertWidget(2, self.editorWidget)
 
-        self.splitter.setStretchFactor(1, 4)
-        self.splitter.setStretchFactor(2, 1)
+        self.splitter.setSizes([10,3])
+        # self.splitter.setStretchFactor(1, 4)
+        # self.splitter.setStretchFactor(2, 1)
         
         self.layout.addWidget(self.splitter)
         self.setLayout(self.layout)
@@ -73,51 +75,33 @@ class CardViewerDialog(QDialog):
         self.resized.connect(self.resizeWebView)
         
         # Resize the window
-        self.resize(1439, 800)
+        width = QApplication.primaryScreen().size().width()
+        height = QApplication.primaryScreen().size().height()
+        self.resize(width, height)
 
     # Signal emitted when the dialog is resized
     resized = pyqtSignal()
 
-    def editNote(self, noteId, cardId):
+    def editNote(self, noteId):
         
         # Set the last card and node ids to be used in the callback function
-        if('editorCardId' in self.__dict__):
-            self.editorLastCardId = self.editorCardId
+        if('editorNoteId' in self.__dict__):
             self.editorLastNoteId = self.editorNoteId
         
         # Set the current card and note ids
-        self.editorCardId = cardId
         self.editorNoteId = noteId
         # Set the editor note
-        self.editor.set_note(noteId)
+        self.editor.set_note(mw.col.get_note(noteId))
 
         # Callback function for when the editing is done
         def editNoteCallback():
-            if('editorLastCardId' in self.__dict__):
-                card = getCardsInfo([self.editorLastCardId], BASE_TAG)[0]
-                # log("SAVED")
-                # log(card[0]["cardId"])
-                # log(card[0]["answer"])
+            if('editorLastNoteId' in self.__dict__):
+                log(self.editorLastNoteId)
+                log(self.editorNoteId)
+                note = getNotesInfo([self.editorLastNoteId], BASE_TAG)[0]
+                log(json.dumps(note))
                 
-                # card = {}
-                # card["cardId"] = self.editorLastCardId
-                # card["question"] = self.editor.note.fields[0]
-                # card["answer"] = self.editor.note.fields[1]
-                # card["tags"] = self.editor.note.tags
-                # log("SAVED2")
-                # log(card["cardId"])
-                # log(card["answer"])
-                # log("---------------")
-                # log("      ")
-                
-                # tagsOfInterest = []
-                # for tag in card["tags"]:
-                #     if BASE_TAG in tag:
-                #         tagsOfInterest.append(tag)
-                
-                # card["tagsOfInterest"] = tagsOfInterest
-                
-                self.backend.triggerReload.emit(json.dumps(card))
+                self.backend.finishedEditing.emit(json.dumps(note))
             
         # Event binding
         self.editor.call_after_note_saved(editNoteCallback)
@@ -135,7 +119,6 @@ class CardViewerDialog(QDialog):
         self.webview.load(QUrl(url))
 
         self.webview.page().setWebChannel(self.channel)
-        # self.webview.reques(self.webview.page(), QWebEnginePage.PermissionType.ClipboardAccess)
         settings = self.webview.page().profile().settings()
         settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, True)
         return False

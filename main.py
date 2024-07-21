@@ -5,6 +5,7 @@ from aqt import QAction
 from .devtools import isDevelopment
 
 from .cardviewer import CardViewerDialog
+from .devtools import log
 
 mw.addonManager.setWebExports(__name__, r"web/.*")
 
@@ -24,5 +25,6 @@ def openDialog():
     
     cardViewerDialog.open()
 
-def editNote(noteId, cardId):
-    cardViewerDialog.editNote(noteId, cardId)
+def editNote(noteId):
+    log("Fn: main.editNote")
+    cardViewerDialog.editNote(noteId)

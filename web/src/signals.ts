@@ -15,6 +15,7 @@ export let paginationInfo = {
     total: 1,
     cardsPerPage: 30
 }
+export let currentBaseTag = ANKI.BASE_CATEGORY_TAG
 
 // Actions
 export const refreshCardGrid = () => {
@@ -25,20 +26,50 @@ export const refreshPagination = () => {
     willRefreshPagination.value = !willRefreshPagination.value
 }
 
-export const performSearch = async (query: string, cardsPerPage = ANKI.CARDS_PER_PAGE) => {
+export const performSearch = async (query: string, cardsPerPage: number = ANKI.CARDS_PER_PAGE, baseTag: string = currentBaseTag, force: boolean = false) => {
+    console.log("PERFORM SEARCH")
     let currentPage = 0
 
-    // Get the current cards in the page
-    let { cards, totalPages } = await performQuery(query, currentPage, cardsPerPage)
+    // Prevent query execution if it is the same as the current query, currentPage, and cardsPerPage
+    if(query == currentQuery &&
+        currentPage == paginationInfo.current &&
+        cardsPerPage == paginationInfo.cardsPerPage &&
+        baseTag == currentBaseTag &&
+        force == false
+    ) {
+        return;
+    }
 
-    // Set the signal variables
+    // Set the selected signal variables
     currentQuery = query
-
-    currentCards = cards
-
     paginationInfo.current = currentPage
-    paginationInfo.total = totalPages
     paginationInfo.cardsPerPage = cardsPerPage
+    currentBaseTag = baseTag
+
+    // Get the current cards in the page
+    // performQuery(query, currentPage, cardsPerPage)
+    
+    let { cards, totalPages } = await performQuery(query, currentPage, cardsPerPage, baseTag)
+
+    // Set the signal variables returned from the backend
+    currentCards = cards
+    paginationInfo.total = totalPages
+
+    if(isDevelopment()) {
+        console.log("Fn: Signals - performSearch")
+        console.log(cards, paginationInfo)
+    }
+
+    // Rerender the involved components
+    refreshCardGrid()
+    refreshPagination()
+}
+
+export const lastSearchResultsReceived = ({ cards, totalPages }) => {
+
+    // Set the signal variables returned from the backend
+    currentCards = cards
+    paginationInfo.total = totalPages
 
     if(isDevelopment()) {
         console.info("Fn: Signals - performSearch")
@@ -58,8 +89,9 @@ export const changePage = async (page: number) => {
     let query = currentQuery
     let currentPage = page
     let cardsPerPage = paginationInfo.cardsPerPage
+    let baseTag = currentBaseTag
 
-    let { cards } = await performQuery(query, currentPage, cardsPerPage)
+    let { cards } = await performQuery(query, currentPage, cardsPerPage, baseTag)
 
     // Set the signal variables
     currentCards = cards

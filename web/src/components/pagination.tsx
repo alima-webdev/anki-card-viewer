@@ -91,7 +91,7 @@ export function PaginationComponent() {
                     <PaginationLink className="w-20">
                         {/* {current + 1} */}
                         <form onSubmit={goToCustomPage} className="w-full">
-                            <Input name="page" placeholder={current + 1} className="text-center w-full" />
+                            <Input name="page" placeholder={current + 1} className="text-center w-full" value={current + 1} />
                         </form>
 
                     </PaginationLink>

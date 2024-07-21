@@ -10,6 +10,7 @@ import { sortCardsByTags } from "./utils"
 
 // Devtools
 import { log } from "../devtools"
+import { currentQuery, paginationInfo } from "../signals"
 
 /**
  * Variable that defines if the API has been initiate and is ready for use
@@ -31,18 +32,18 @@ export async function initAPI() {
  * @param {query} string - Search criteria
  * @returns {QueryResults}
  */
-export async function performQuery(query: string, currentPage: number, cardsPerPage: number) {
-    return (await Connector.getCardsFromQuery(query, currentPage, cardsPerPage))
+export async function performQuery(query: string, currentPage: number, cardsPerPage: number, baseTag: string) {
+    return (await Connector.getCardsFromQuery(query, currentPage, cardsPerPage, baseTag))
 }
 
 /**
  * Edit the card
  *
- * @param {cardId} string - Card Id
+ * @param {noteId} string - Note Id
  * @returns {QueryResults}
  */
-export async function editCard(cardId: number) {
-    return (await Connector.editCard(cardId))
+export async function editCard(noteId: number) {
+    return (await Connector.editCard(noteId))
 }
 
 /**

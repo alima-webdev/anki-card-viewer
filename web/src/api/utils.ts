@@ -4,6 +4,7 @@ import { ANKI } from "../globals"
 
 // Devtools
 import { log } from "../devtools";
+import { currentBaseTag } from "../signals";
 
 // Get Text Content
 
@@ -56,7 +57,7 @@ export function getContent(htmlString: string, querySelector: string = "#text") 
 export function parseTag(tag: string, stripBaseTag = true) {
     let newTag = tag
     if (stripBaseTag == true) {
-        newTag = newTag.replace(new RegExp(`${ANKI.BASE_CATEGORY_TAG}`, "g"), "")
+        newTag = newTag.replace(new RegExp(`${currentBaseTag}`, "g"), "")
     }
     newTag = newTag
         .replace(new RegExp('^::+|::+$', 'g'), '')
@@ -87,7 +88,7 @@ export function processTags(cards) {
 
     const parseTag = (tag: string) => {
         return tag
-            .replace(new RegExp(`${ANKI.BASE_CATEGORY_TAG}`, "g"), "")
+            .replace(new RegExp(`${currentBaseTag}`, "g"), "")
             .replace(new RegExp('^::+|::+$', 'g'), '')
             .replace(/["_"]/g, " ")
             .split("::")
@@ -96,7 +97,7 @@ export function processTags(cards) {
     let processedCards = cards.map((card, index) => {
         const tagsOfInterest = card.tags.map(tag => {
             // If is a tag of interest
-            if (tag.includes(ANKI.BASE_CATEGORY_TAG)) {
+            if (tag.includes(currentBaseTag)) {
                 return parseTag(tag)
             }
         }).filter(Boolean)

@@ -87,6 +87,9 @@
         @apply bg-gray-300;
     }
 }
+#search-bar {
+    z-index: 9999;
+}
 
 /* @media (prefers-color-scheme: dark) {
     body {

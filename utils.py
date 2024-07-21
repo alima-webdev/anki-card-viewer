@@ -2,6 +2,9 @@
 from functools import reduce
 import re
 from bs4 import BeautifulSoup
+from lxml import objectify, etree, html
+from pprint import pprint
+from lxml_html_clean import Cleaner
 
 # Anki
 from aqt import mw
@@ -10,6 +13,9 @@ from .consts import HOST, PORT
 
 # Devtools
 from .devtools import log
+
+def extractTagsOfInterest(tags, baseTag):
+    return list(filter(lambda x: x.startswith(baseTag), tags))
 
 
 def parseTag(tag, baseTag):
@@ -58,7 +64,7 @@ def getCardsInfo(ids, baseTag):
 
         card = {}
         card["cardId"] = id
-        card["question"] = getSubElementInnerHTML(cardInfo.note().fields[0], "#text")
+        # card["question"] = getSubElementInnerHTML(cardInfo.note().fields[0], "#text")
         card["answer"] = getSubElementInnerHTML(cardInfo.answer(), "#text")
         card["isSuspended"] = cardInfo.queue == -1
         card["tags"] = cardInfo.note().tags
@@ -74,28 +80,61 @@ def getCardsInfo(ids, baseTag):
     return cards
 
 
-# HTML Parser
-def getSubElementInnerHTML(
-    html_string, selector
-):  # Create a BeautifulSoup object from the HTML string
-    soup = BeautifulSoup(html_string, "html.parser")
+def getNotesInfo(ids, baseTag):
 
-    # Use select_one to find the first element matching the selector
-    sub_element = soup.select_one(selector)
+    notes = []
+    for id in ids:
+        noteInfo = mw.col.get_note(id)
 
-    # Check if sub_element is found
-    if sub_element:
+        note = {}
+        note["noteId"] = id
+        # card["question"] = getSubElementInnerHTML(cardInfo.note().fields[0], "#text")
+        note["answer"] = getSubElementInnerHTML(noteInfo.fields[0], "#text")
+        # note["isSuspended"] = noteInfo.queue == -1
+        note["tags"] = noteInfo.tags
         
-        # Find all img tags
-        img_tags = soup.find_all('img')
+        note["tagsOfInterest"] = extractTagsOfInterest(note["tags"], baseTag)
 
-        # Prepend "http://" to src attribute of each img tag
-        for img in img_tags:
-            if img.has_attr('src'):
-                img['src'] = 'http://' + HOST + ":" + str(PORT) + "/" + img['src']
-                
-        # Return the inner HTML of the subelement
-        return str(sub_element)
-    else:
-        # Return None or handle the case where subelement is not found
-        return None
+        # tagsOfInterest = []
+        # for tag in note["tags"]:
+        #     if baseTag in tag:
+        #         tagsOfInterest.append(tag)
+        # note["tagsOfInterest"] = tagsOfInterest
+
+        notes.append(note)
+
+    return notes
+
+
+def elementToHTML(elements):
+    # Function to convert an element to HTML string
+    def performConversion(element):
+        # Serialize the element to a string and return it
+        return etree.tostring(element, encoding='unicode', method='html')
+
+    # Generate HTML strings for selected elements
+    output = [performConversion(element) for element in elements]
+
+    # Join HTML strings into a single string
+    output = ''.join(output)
+    
+    return output
+
+
+cleaner = Cleaner()
+cleaner.scripts = True # This is True because we want to activate the javascript filter
+cleaner.style = True      # This is True because we want to activate the styles & stylesheet filter
+
+# HTML Parser
+def getSubElementInnerHTML(input, id):
+    htmlString = input
+    
+    htmlString = cleaner.clean_html(htmlString)
+    root = html.fromstring(htmlString)
+    # etree.strip_tags(root, 'script, style')
+    
+    results = root.xpath("//div[@id = '%s']" % id)
+    if not results:
+        return elementToHTML(root)
+    
+    return elementToHTML(results[0])

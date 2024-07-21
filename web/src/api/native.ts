@@ -5,7 +5,7 @@ import { getContent, processTags } from "./utils"
 
 // Devtools
 import { isDevelopment, log } from "../devtools"
-import { currentCards, refreshCardGrid } from "../signals";
+import { currentCards, lastSearchResultsReceived, refreshCardGrid } from "../signals";
 
 /**
  * Variable used to communicate with the backend API (QWebChannel backend)
@@ -24,24 +24,37 @@ export async function initConnection() {
             nativeBackend = channel.objects.backend;
 
             // Connect to a signal:
-            channel.objects.backend.triggerReload.connect(function (card) {
+            channel.objects.backend.finishedEditing.connect(function (note) {
+                console.log("Fn: Native - finishedEditing (card info edited)")
 
-                let newCard = JSON.parse(card)
+                let updatedNote = JSON.parse(note)
 
                 if (isDevelopment()) {
-                    console.info("Fn: Native - triggerReload (card info edited)")
-                    console.info(newCard.cardId, newCard.answer)
+                    console.log("Fn: Native - finishedEditing (card info edited)")
+                    console.info(updatedNote)
+                    console.info(updatedNote.noteId, updatedNote.answer)
                 }
-                const arrayIndex = currentCards.findIndex(card => {
-                    return card.cardId == newCard.cardId
-                })
-                if (arrayIndex >= 0) {
+                const arrayIndexes = currentCards.map((card, index) => {
+                    if (card.noteId == updatedNote.noteId) {
+                        return index
+                    }
+                }).filter(Number.isInteger)
+                console.info(arrayIndexes)
+                if (arrayIndexes.length >= 0) {
                     console.warn("change card info")
-                    currentCards[arrayIndex].question = newCard.question
-                    currentCards[arrayIndex].answer = newCard.answer
+                    for (let index of arrayIndexes) {
+                        console.log(index)
+                        currentCards[index].question = updatedNote.question
+                        currentCards[index].answer = updatedNote.answer
+                    }
                     // currentCards = [...updatedCards]
                     refreshCardGrid()
                 }
+            });
+
+
+            channel.objects.backend.queryFinished.connect((response) => {
+                lastSearchResultsReceived(JSON.parse(response))
             });
 
             resolve(true)
@@ -59,12 +72,12 @@ export async function initConnection() {
  * @param {query} string - Search criteria
  * @returns {Promise<BasicCardInfo[]>}
  */
-export async function getCardsFromQuery(query: string, currentPage: number, cardsPerPage: number): Promise<QueryResults> {
+export async function getCardsFromQuery(query: string, currentPage: number, cardsPerPage: number, baseTag: string): Promise<QueryResults> {
     let payload = {
         query: query,
         currentPage: currentPage,
         cardsPerPage: cardsPerPage,
-        baseTag: ANKI.BASE_CATEGORY_TAG
+        baseTag: baseTag
     }
     if (isDevelopment()) {
         console.info("Fn: Native - getCardsFromQuery")
@@ -82,12 +95,12 @@ export async function getCardsFromQuery(query: string, currentPage: number, card
 /**
  * Edit the card
  * @async
- * @param {cardId} number - Card Id
+ * @param {noteId} number - Note Id
  * @returns {boolean}
  */
-export async function editCard(cardId: number) {
+export async function editCard(noteId: number) {
     return await new Promise((resolve, reject) => {
-        nativeBackend.editCard(cardId, (response) => {
+        nativeBackend.editCard(noteId, (response) => {
             resolve(response)
         })
     }) as boolean
