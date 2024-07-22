@@ -33,7 +33,6 @@ export function PaginationComponent() {
     const goToCustomPage = (event: SubmitEvent) => {
         const data = new FormData(event.currentTarget as HTMLFormElement);
         const page = parseInt(data.get("page") as string) - 1
-        console.error(page)
         goToPage(page)
         event.preventDefault()
     }

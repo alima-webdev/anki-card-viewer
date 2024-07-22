@@ -8,9 +8,12 @@ from aqt.qt import (
     pyqtSignal,
     QApplication
 )
-from aqt import QSettings, QSplitter, QWebChannel, QWebEnginePage, QWebEngineSettings, QWidget, mw
+from aqt import QKeyEvent, QSettings, QSplitter, QWebChannel, QWebEnginePage, QWebEngineSettings, QWidget, mw, gui_hooks
+
+from aqt.browser.previewer import BrowserPreviewer as PreviewDialog
+
 from aqt.editor import Editor, EditorMode
-from .utils import getCardsInfo, getNotesInfo
+from .utils import getNotesInfo
 from .hooks import Backend
 from .consts import ADDON_NAME, HOST, PORT, BASE_TAG
 
@@ -35,8 +38,11 @@ class CardViewerDialog(QDialog):
         # Splitter
         self.splitter = QSplitter()
         self.splitter.setOrientation(Qt.Orientation.Horizontal)
-        # self.splitter.setStyleSheet(
         #     "QSplitter::handle {  image: url('data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='); }"
+        # self.splitter.setStyleSheet(
+        #     """QSplitter::handle: {
+        #         width: 100%;
+        #     }"""
         # )
 
         # Webview
@@ -52,23 +58,21 @@ class CardViewerDialog(QDialog):
 
         # Editor
         self.editorWidget = QWidget()
+        
         self.editor = Editor(
             mw,
             self.editorWidget,
             self,
             editor_mode=EditorMode.EDIT_CURRENT,
         )
-        # self.editorWidget.setMinimumWidth(200)
-        # self.editorWidget.setMaximumWidth(400)
         
         self.splitter.insertWidget(1, self.webview)
         self.splitter.insertWidget(2, self.editorWidget)
 
-        self.splitter.setSizes([10,3])
-        # self.splitter.setStretchFactor(1, 4)
-        # self.splitter.setStretchFactor(2, 1)
+        self.splitter.setSizes([10,0])
         
         self.layout.addWidget(self.splitter)
+        self.layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.layout)
 
         # Connect signal for resizing
@@ -92,14 +96,15 @@ class CardViewerDialog(QDialog):
         self.editorNoteId = noteId
         # Set the editor note
         self.editor.set_note(mw.col.get_note(noteId))
+        
+        # Open up the sidebar if closed
+        if(self.editorWidget.size().width() < 200):
+            self.splitter.setSizes([10,3])
 
         # Callback function for when the editing is done
         def editNoteCallback():
             if('editorLastNoteId' in self.__dict__):
-                log(self.editorLastNoteId)
-                log(self.editorNoteId)
                 note = getNotesInfo([self.editorLastNoteId], BASE_TAG)[0]
-                log(json.dumps(note))
                 
                 self.backend.finishedEditing.emit(json.dumps(note))
             

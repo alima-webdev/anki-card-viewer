@@ -60,9 +60,9 @@ export function SearchComponent() {
         event.preventDefault()
     }
     return (
-        <nav id="search-bar" className="sticky top-0 w-full p-4 bg-white z-50">
+        <nav id="navigation" className="sticky top-0 w-full p-4 bg-white dark:bg-black border-b z-9999">
             <form ref={formRef} onSubmit={onSubmit}>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-4">
                     <div className="relative flex-1">
                         <input ref={baseTagHiddenInputRef} type="hidden" name="baseTag" />
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -83,7 +83,7 @@ export function SearchComponent() {
                                 <SelectTrigger>
                                     <SelectValue placeholder="Cards per Page" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="z-9999">
                                     <SelectGroup>
                                         <SelectLabel>Cards per Page</SelectLabel>
                                         {ANKI.CARDS_PER_PAGE_OPTIONS.map(cardsPerPageOption => (
@@ -100,7 +100,7 @@ export function SearchComponent() {
                                         <CogIcon className="h-4 w-4 text-muted-foreground"></CogIcon>
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-96">
+                                <PopoverContent className="w-96 mx-4 z-9999">
                                     <form onSubmit={applySettings} className="flex flex-col gap-4">
                                         <Label htmlFor="baseTag">Base Category Tag</Label>
                                         <Input ref={baseTagInputRef} placeholder="e.g. #AK_Step2_v12..." value={currentBaseTag} />

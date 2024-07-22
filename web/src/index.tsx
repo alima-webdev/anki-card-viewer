@@ -43,9 +43,9 @@ export function App() {
     }, [])
 
     return (
-        <main>
+        <main className="dark:dark">
             <SearchComponent />
-            <div className="grid grid-rows gap-4 m-4 dark:dark">
+            <div className="p-4 grid grid-rows gap-4">
                 <CardGridComponent />
                 <PaginationComponent />
             </div>

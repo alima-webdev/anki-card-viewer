@@ -111,7 +111,7 @@ export function CardGridComponent() {
                 <Skeleton className="h-[125px] rounded-xl" />
             </div>
         }>
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
                 {(cards.length > 0 ? cards.map(({ cardId, noteId, answer, isSuspended, tags, tagsOfInterest = [] }) => {
 
                     // Card category
@@ -137,7 +137,7 @@ export function CardGridComponent() {
                         <>
                             {/* Category Header */}
                             {(insertCategoryHeader ?
-                                <div className="md:col-span-3 lg:col-span-4 xl:col-span-5">
+                                <div className="md:col-span-3 lg:col-span-4 xl:col-span-4">
                                     <h1 className="mt-3 text-2xl font-semibold tracking-tight">
                                         {currentCategory}
                                     </h1>

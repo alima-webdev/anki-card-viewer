@@ -87,8 +87,16 @@
         @apply bg-gray-300;
     }
 }
-#search-bar {
+.z-9999 {
     z-index: 9999;
+}
+
+html,
+body {
+    height: 100vh;
+}
+nav {
+    @apply bg-white;
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -96,7 +104,7 @@
         @apply dark bg-black;
     }
     .suspended {
-        @apply bg-black text-muted;
+        @apply bg-black;
         .card-tag {
             @apply text-muted;
         }

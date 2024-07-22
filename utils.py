@@ -55,31 +55,6 @@ def sortCardsIdsByTags(ids, baseTag):
 
     return cards
 
-
-def getCardsInfo(ids, baseTag):
-
-    cards = []
-    for id in ids:
-        cardInfo = mw.col.get_card(id)
-
-        card = {}
-        card["cardId"] = id
-        # card["question"] = getSubElementInnerHTML(cardInfo.note().fields[0], "#text")
-        card["answer"] = getSubElementInnerHTML(cardInfo.answer(), "#text")
-        card["isSuspended"] = cardInfo.queue == -1
-        card["tags"] = cardInfo.note().tags
-
-        tagsOfInterest = []
-        for tag in card["tags"]:
-            if baseTag in tag:
-                tagsOfInterest.append(tag)
-        card["tagsOfInterest"] = tagsOfInterest
-
-        cards.append(card)
-
-    return cards
-
-
 def getNotesInfo(ids, baseTag):
 
     notes = []
@@ -88,23 +63,18 @@ def getNotesInfo(ids, baseTag):
 
         note = {}
         note["noteId"] = id
-        # card["question"] = getSubElementInnerHTML(cardInfo.note().fields[0], "#text")
-        note["answer"] = getSubElementInnerHTML(noteInfo.fields[0], "#text")
-        # note["isSuspended"] = noteInfo.queue == -1
+        note["answer"] = processHTML(noteInfo.fields[0])
         note["tags"] = noteInfo.tags
-        
         note["tagsOfInterest"] = extractTagsOfInterest(note["tags"], baseTag)
-
-        # tagsOfInterest = []
-        # for tag in note["tags"]:
-        #     if baseTag in tag:
-        #         tagsOfInterest.append(tag)
-        # note["tagsOfInterest"] = tagsOfInterest
 
         notes.append(note)
 
     return notes
 
+def processHTML(html: str):
+    clozeRegex = "\{\{c[0-9]\:\:(.*?)(::.*}}|(}}))"
+    output = re.sub(clozeRegex, r"""<span class="cloze">\1</span>""", html)
+    return output
 
 def elementToHTML(elements):
     # Function to convert an element to HTML string
@@ -121,20 +91,23 @@ def elementToHTML(elements):
     return output
 
 
-cleaner = Cleaner()
-cleaner.scripts = True # This is True because we want to activate the javascript filter
-cleaner.style = True      # This is True because we want to activate the styles & stylesheet filter
+# cleaner = Cleaner()
+# cleaner.scripts = True # This is True because we want to activate the javascript filter
+# cleaner.style = True      # This is True because we want to activate the styles & stylesheet filter
 
-# HTML Parser
-def getSubElementInnerHTML(input, id):
-    htmlString = input
+# # HTML Parser
+# def getSubElementInnerHTML(input, id, logResults=False):
+#     htmlString = input
     
-    htmlString = cleaner.clean_html(htmlString)
-    root = html.fromstring(htmlString)
-    # etree.strip_tags(root, 'script, style')
+#     htmlString = cleaner.clean_html(htmlString)
+#     root = html.fromstring(htmlString)
     
-    results = root.xpath("//div[@id = '%s']" % id)
-    if not results:
-        return elementToHTML(root)
+#     results = root.xpath("//div[@id = '%s']" % id)
+#     if(logResults == True):
+#         log("RESULTS")
+#         log(input)
+#         log(results)
+#     if not results:
+#         return elementToHTML(root)
     
-    return elementToHTML(results[0])
+#     return elementToHTML(results)

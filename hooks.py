@@ -15,9 +15,7 @@ from .consts import HOOKS_PREFIX, BASE_TAG
 # import consts
 from .utils import (
     extractTagsOfInterest,
-    getSubElementInnerHTML,
-    sortCardsIdsByTags,
-    getCardsInfo
+    processHTML,
 )
 
 # Devtools
@@ -88,7 +86,7 @@ class Backend(QObject):
         # Get the cards in the page
         cards = list(cards[startIndex:endIndex])
         def getCardAnswer(card):
-            card["answer"] = getSubElementInnerHTML(mw.col.get_note(card["noteId"]).fields[0], 'text')
+            card["answer"] = processHTML(mw.col.get_note(card["noteId"]).fields[0])
             return card
         cards = list(map(getCardAnswer, cards))
         
@@ -107,7 +105,6 @@ class Backend(QObject):
     @pyqtSlot(str, result=bool)
     def editCard(self, noteId):
         from .main import editNote
-        log("Fn: editCard")
         # noteId = mw.col.get_card(int(cardId)).note()
         editNote(int(noteId))
         return True
