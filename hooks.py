@@ -62,6 +62,7 @@ class Backend(QObject):
             card = {}
             card["cardId"] = id
             card["noteId"] = note.id
+            card["isSuspended"] = cardInfo.queue == -1
             card["tags"] = note.tags
             card["tagsOfInterest"] = extractTagsOfInterest(note.tags, baseTag)
             return card
@@ -74,7 +75,7 @@ class Backend(QObject):
             if(len(card["tagsOfInterest"]) > 0):
                 field = card["tagsOfInterest"][0]
                 isNone = False
-            return (isNone, field)
+            return (isNone, field, card["noteId"])
         cards = sorted(cards, key=sortByTagsOfInterest)
         
         # Page index boundaries
