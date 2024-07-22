@@ -78,7 +78,7 @@
 
 /* CUSTOM */
 .cloze {
-    @apply bg-gray-200 rounded-sm py-0.5 px-2;
+    @apply inline-block bg-gray-200 rounded-sm py-0.5 px-2;
 }
 .suspended {
     @apply bg-gray-100 text-muted-foreground;

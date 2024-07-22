@@ -7,7 +7,7 @@ import { CogIcon, Search } from "lucide-react";
 import { ANKI } from "../globals";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRef } from "preact/hooks";
-import { currentBaseTag, performSearch } from "../signals";
+import { currentBaseTag, paginationInfo, performSearch } from "../signals";
 
 // Devtools
 import { isDevelopment } from "../devtools";
@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 export function SearchComponent() {
 
     const formRef = useRef(null)
-    const baseTagHiddenInputRef = useRef(null)
     const baseTagInputRef = useRef(null)
 
     // Event: Search Form Submission
@@ -36,7 +35,7 @@ export function SearchComponent() {
 
         const query = data.get("query") as string
         const cardsPerPage = parseInt(data.get("cardsPerPage") as string)
-        const baseTag = data.get("baseTag") as string
+        const baseTag = (baseTagInputRef.current ? baseTagInputRef.current.value as string : currentBaseTag)
 
         if (isDevelopment()) {
             console.info("Fn: Perform Search")
@@ -55,7 +54,6 @@ export function SearchComponent() {
     }
 
     const applySettings = (event: SubmitEvent) => {
-        baseTagHiddenInputRef.current.value = baseTagInputRef.current.value
         searchSettingsChange()
         event.preventDefault()
     }
@@ -64,7 +62,6 @@ export function SearchComponent() {
             <form ref={formRef} onSubmit={onSubmit}>
                 <div className="flex items-center space-x-4">
                     <div className="relative flex-1">
-                        <input ref={baseTagHiddenInputRef} type="hidden" name="baseTag" />
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             name="query"
@@ -79,7 +76,7 @@ export function SearchComponent() {
                             Cards per Page:
                         </Label>
                         <div class="flex-shrink">
-                            <Select id="cardsPerPage" name="cardsPerPage" defaultValue={String(ANKI.CARDS_PER_PAGE)} onValueChange={searchSettingsChange}>
+                            <Select id="cardsPerPage" name="cardsPerPage" defaultValue={String(paginationInfo.cardsPerPage)} onValueChange={searchSettingsChange}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Cards per Page" />
                                 </SelectTrigger>

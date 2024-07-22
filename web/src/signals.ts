@@ -13,9 +13,13 @@ export let currentCards = []
 export let paginationInfo = {
     current: 0,
     total: 1,
-    cardsPerPage: 30
+    cardsPerPage: ANKI.CARDS_PER_PAGE
 }
 export let currentBaseTag = ANKI.BASE_CATEGORY_TAG
+
+// TEST
+export let loading = signal(false)
+// END - TEST
 
 // Actions
 export const refreshCardGrid = () => {
@@ -28,6 +32,10 @@ export const refreshPagination = () => {
 
 export const performSearch = async (query: string, cardsPerPage: number = ANKI.CARDS_PER_PAGE, baseTag: string = currentBaseTag, force: boolean = false) => {
     console.log("PERFORM SEARCH")
+
+    // Loading state
+    // loading.value = true
+
     let currentPage = 0
 
     // Prevent query execution if it is the same as the current query, currentPage, and cardsPerPage
@@ -60,6 +68,9 @@ export const performSearch = async (query: string, cardsPerPage: number = ANKI.C
         console.log(cards, paginationInfo)
     }
 
+    // Loading state
+    // loading.value = false
+
     // Rerender the involved components
     refreshCardGrid()
     refreshPagination()
@@ -86,6 +97,9 @@ export const changePage = async (page: number) => {
     // Ensure the selected page is within range
     if(isNaN(page) || page < 0 || page >= paginationInfo.total) return;
 
+    // Loading state
+    // loading.value = true
+
     let query = currentQuery
     let currentPage = page
     let cardsPerPage = paginationInfo.cardsPerPage
@@ -101,6 +115,9 @@ export const changePage = async (page: number) => {
         console.info("Fn: Signals - changePage")
         console.info(cards, paginationInfo)
     }
+
+    // Loading state
+    // loading.value = false
 
     refreshCardGrid()
     refreshPagination()

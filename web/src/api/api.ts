@@ -10,7 +10,7 @@ import { sortCardsByTags } from "./utils"
 
 // Devtools
 import { log } from "../devtools"
-import { currentQuery, paginationInfo } from "../signals"
+import { currentQuery, loading, paginationInfo } from "../signals"
 
 /**
  * Variable that defines if the API has been initiate and is ready for use

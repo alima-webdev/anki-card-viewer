@@ -11,10 +11,12 @@ export default defineConfig({
 		Terminal()
 	],
 	resolve: {
-		alias: {
+		alias: [{
 			// "@": path.resolve(__dirname, "./src"),
-			"@": path.resolve(__dirname, "@"),
-		},
+			find: "@",
+			replacement: path.resolve(__dirname, "@"),
+			// "@": path.resolve(__dirname, "@"),
+		}],
 	},
 	server: {
 		cors: true,

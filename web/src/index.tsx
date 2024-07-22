@@ -36,7 +36,6 @@ export function App() {
     useEffect(() => {
         const performEffect = async () => {
             await initAPI()
-            console.log("init")
             performSearch(ANKI.DEFAULT_SEARCH_QUERY, ANKI.CARDS_PER_PAGE, ANKI.BASE_CATEGORY_TAG)
         }
         performEffect()

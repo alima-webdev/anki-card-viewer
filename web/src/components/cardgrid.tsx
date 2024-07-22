@@ -1,7 +1,4 @@
 // Imports
-// Preact
-import { Suspense } from 'preact/compat';
-
 // UI
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -15,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 // Internal
 import { suspend, unsuspend, editCard } from '../api/api';
 import { parseCardContent, parseTag } from '../api/utils';
-import { currentBaseTag, currentCards, refreshCardGrid, willRefreshCardGrid } from '../signals';
+import { currentBaseTag, currentCards, loading, refreshCardGrid, willRefreshCardGrid } from '../signals';
 
 // Devtools
 import { isDevelopment, log } from '../devtools';
@@ -101,115 +98,128 @@ export function CardGridComponent() {
     let currentCategory = ""
 
     return (
-        <Suspense fallback={
-            <div className="grid grid-cols-3 gap-4">
-                <Skeleton className="h-[125px] rounded-xl" />
-                <Skeleton className="h-[125px] rounded-xl" />
-                <Skeleton className="h-[125px] rounded-xl" />
-                <Skeleton className="h-[125px] rounded-xl" />
-                <Skeleton className="h-[125px] rounded-xl" />
-                <Skeleton className="h-[125px] rounded-xl" />
-            </div>
-        }>
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
-                {(cards.length > 0 ? cards.map(({ cardId, noteId, answer, isSuspended, tags, tagsOfInterest = [] }) => {
+        <>
+            {(loading.value == true ? (
+                <div className="grid grid-cols-3 gap-4">
+                    <Skeleton className="h-[200px] rounded-xl" />
+                    <Skeleton className="h-[200px] rounded-xl" />
+                    <Skeleton className="h-[200px] rounded-xl" />
 
-                    // Card category
-                    let category = ""
-                    let tagsOfInterestParsed = []
-                    if (tagsOfInterest.length == 0) {
-                        category = "Miscellaneous"
-                    } else {
-                        tagsOfInterestParsed = tagsOfInterest.map(tag => {
-                            return parseTag(tag)
-                        })
-                        category = tagsOfInterest[0].replace(currentBaseTag, "").split("::").filter(Boolean)[0].replace("_", " ")
-                    }
+                    <Skeleton className="h-[200px] rounded-xl" />
+                    <Skeleton className="h-[200px] rounded-xl" />
+                    <Skeleton className="h-[200px] rounded-xl" />
 
-                    // Decide if a category header should be inserted and sets the current category if needed
-                    let insertCategoryHeader = false
-                    if (currentCategory != category) {
-                        insertCategoryHeader = true
-                        currentCategory = category
-                    }
+                    <Skeleton className="h-[200px] rounded-xl" />
+                    <Skeleton className="h-[200px] rounded-xl" />
+                    <Skeleton className="h-[200px] rounded-xl" />
 
-                    return (
-                        <>
-                            {/* Category Header */}
-                            {(insertCategoryHeader ?
-                                <div className="md:col-span-3 lg:col-span-4 xl:col-span-4">
-                                    <h1 className="mt-3 text-2xl font-semibold tracking-tight">
-                                        {currentCategory}
-                                    </h1>
-                                </div>
-                                : "")}
+                    <Skeleton className="h-[125px] rounded-xl" />
+                    <Skeleton className="h-[125px] rounded-xl" />
+                    <Skeleton className="h-[125px] rounded-xl" />
+                </div>
+            ) : (
+                <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
+                    {(cards.length > 0 ? cards.map(({ cardId, noteId, answer, isSuspended, tags, tagsOfInterest = [] }) => {
 
-                            {/* Card */}
-                            <Card className={(isSuspended ? "suspended" : "") + " flex flex-col cursor-pointer"} data-id={cardId} data-note-id={noteId} data-suspended={isSuspended} onClick={cardClickEvent}>
-                                <CardHeader>
-                                    {(isDevelopment() ?
-                                        <small className="text-muted-foreground">
-                                            Note: {noteId}<br />
-                                            Card: {cardId}
-                                        </small>
-                                        : "")}
-                                    <div class="flex items-center">
-                                        {/* Tag and Popover */}
-                                        <div className="flex-1 text-xs text-left text-muted-foreground card-tag">
-                                            {(tagsOfInterestParsed.length > 0 ? tagsOfInterestParsed[0] : "Miscellaneous")}
+                        // Card category
+                        let category = ""
+                        let tagsOfInterestParsed = []
+                        if (tagsOfInterest.length == 0) {
+                            category = "Miscellaneous"
+                        } else {
+                            tagsOfInterestParsed = tagsOfInterest.map(tag => {
+                                return parseTag(tag)
+                            })
+                            category = tagsOfInterest[0].replace(currentBaseTag, "").split("::").filter(Boolean)[0].replace("_", " ")
+                        }
+
+                        // Decide if a category header should be inserted and sets the current category if needed
+                        let insertCategoryHeader = false
+                        if (currentCategory != category) {
+                            insertCategoryHeader = true
+                            currentCategory = category
+                        }
+
+                        return (
+                            <>
+                                {/* Category Header */}
+                                {(insertCategoryHeader ?
+                                    <div className="md:col-span-3 lg:col-span-4 xl:col-span-4">
+                                        <h1 className="mt-3 text-2xl font-semibold tracking-tight">
+                                            {currentCategory}
+                                        </h1>
+                                    </div>
+                                    : "")}
+
+                                {/* Card */}
+                                <Card className={(isSuspended ? "suspended" : "") + " flex flex-col cursor-pointer"} data-id={cardId} data-note-id={noteId} data-suspended={isSuspended} onClick={cardClickEvent}>
+                                    <CardHeader>
+                                        {(isDevelopment() ?
+                                            <small className="text-muted-foreground">
+                                                Note: {noteId}<br />
+                                                Card: {cardId}
+                                            </small>
+                                            : "")}
+                                        <div class="flex items-center">
+                                            {/* Tag and Popover */}
+                                            <div className="flex-1 text-xs text-left text-muted-foreground card-tag">
+                                                <a onClick={() => { copyTagToClipboard((tagsOfInterest.length > 0 ? tagsOfInterest[0] : "")) }}>
+                                                    {(tagsOfInterestParsed.length > 0 ? tagsOfInterestParsed[0] : "Miscellaneous")}
+                                                </a>
+                                            </div>
+
+                                            <Popover>
+                                                <PopoverTrigger>
+                                                    <Button size="icon" variant="ghost" className="action">
+                                                        <TagsIcon className="h-4 w-4 text-muted-foreground"></TagsIcon>
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-4/5">
+                                                    {/* Tags of Interest */}
+                                                    {(tagsOfInterest.length > 0 ? (
+                                                        <>
+                                                            <div>
+                                                                {tagsOfInterest.map(tag => {
+                                                                    return (
+                                                                        <a className="block mb-1 text-xs cursor-pointer" onClick={() => { copyTagToClipboard(tag) }}>
+                                                                            {parseTag(tag)}
+                                                                        </a>
+                                                                    )
+                                                                })}
+                                                            </div>
+                                                            <Separator orientation="horizontal" className="my-2" />
+                                                        </>
+                                                    ) : "")}
+                                                    {/* Other Tags */}
+                                                    <div>
+                                                        {tags.map(tag => (
+                                                            <div className="mb-1 text-xs text-muted-foreground cursor-pointer" onClick={() => { copyTagToClipboard(tag) }}>
+                                                                {parseTag(tag, false)}
+                                                            </div>))}
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
+                                            {/* : "")} */}
                                         </div>
-                                        
-                                        <Popover>
-                                            <PopoverTrigger>
-                                                <Button size="icon" variant="ghost" className="action">
-                                                    <TagsIcon className="h-4 w-4 text-muted-foreground"></TagsIcon>
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-4/5">
-                                                {/* Tags of Interest */}
-                                                {(tagsOfInterest.length > 0 ? (
-                                                    <>
-                                                        <div>
-                                                            {tagsOfInterest.map(tag => {
-                                                                return (
-                                                                    <a className="block mb-1 text-xs cursor-pointer" onClick={() => { copyTagToClipboard(tag) }}>
-                                                                        {parseTag(tag)}
-                                                                    </a>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                        <Separator orientation="horizontal" className="my-2" />
-                                                    </>
-                                                ) : "")}
-                                                {/* Other Tags */}
-                                                <div>
-                                                    {tags.map(tag => (
-                                                        <div className="mb-1 text-xs text-muted-foreground cursor-pointer" onClick={() => { copyTagToClipboard(tag) }}>
-                                                            {parseTag(tag, false)}
-                                                        </div>))}
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>
-                                        {/* : "")} */}
-                                    </div>
 
-                                </CardHeader>
-                                {/* Content */}
-                                <CardContent>
-                                    <div dangerouslySetInnerHTML={{ __html: parseCardContent(answer) }}></div>
-                                </CardContent>
-                                {/* Footer (suspension status switch) */}
-                                <CardFooter className="flex flex-1 flex-col items-start justify-end">
-                                    <div className="flex items-center space-x-2">
-                                        <Switch id={`suspended-${cardId}`} checked={isSuspended} onCheckedChange={() => { suspendedCheckChanged(`suspended-${cardId}`) }} data-id={cardId} data-suspended={isSuspended} />
-                                        <Label htmlFor={`suspended-${cardId}`} className="text-muted-foreground">Suspended</Label>
-                                    </div>
-                                </CardFooter>
-                            </Card>
-                        </>
-                    )
-                }) : "")}
-            </div>
-        </Suspense>
+                                    </CardHeader>
+                                    {/* Content */}
+                                    <CardContent>
+                                        <div dangerouslySetInnerHTML={{ __html: parseCardContent(answer) }}></div>
+                                    </CardContent>
+                                    {/* Footer (suspension status switch) */}
+                                    <CardFooter className="flex flex-1 flex-col items-start justify-end">
+                                        <div className="flex items-center space-x-2">
+                                            <Switch id={`suspended-${cardId}`} checked={isSuspended} onCheckedChange={() => { suspendedCheckChanged(`suspended-${cardId}`) }} data-id={cardId} data-suspended={isSuspended} />
+                                            <Label htmlFor={`suspended-${cardId}`} className="text-muted-foreground">Suspended</Label>
+                                        </div>
+                                    </CardFooter>
+                                </Card>
+                            </>
+                        )
+                    }) : "")}
+                </div>
+            ))}
+        </>
     )
 }
