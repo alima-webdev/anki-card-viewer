@@ -1,36 +1,23 @@
 # Imports
-from functools import reduce
 import re
-from bs4 import BeautifulSoup
-from lxml import objectify, etree, html
-from pprint import pprint
-from lxml_html_clean import Cleaner
 
 # Anki
 from aqt import mw
 
+# Internal imports
 from .consts import HOST, PORT
 
 # Devtools
 from .devtools import log
 
+
 def extractTagsOfInterest(tags, baseTag):
     return list(filter(lambda x: x.startswith(baseTag), tags))
 
 
-def parseTag(tag, baseTag):
-    tag = tag.replace(baseTag, "")
-    tag = re.sub(
-        r"^::+|::+$",
-        "",
-    )
-
-
-# 1550770886906
 def sortCardsIdsByTags(ids, baseTag):
     cards = []
     for id in ids:
-        # mw.col.get_card(id).rev
         tags = mw.col.get_card(id).note().tags
         tagsOfInterest = []
         for tag in tags:
@@ -42,11 +29,10 @@ def sortCardsIdsByTags(ids, baseTag):
         card["tagsOfInterest"] = tagsOfInterest
         cards.append(card)
     cards.sort(key=lambda x: x["tagsOfInterest"])
-    
-    # let miscCards = []
+
     miscCardsCount = 0
     for card in cards:
-        if(len(card["tagsOfInterest"]) == 0):
+        if len(card["tagsOfInterest"]) == 0:
             # miscCards.push(card)
             miscCardsCount += 1
 
@@ -54,6 +40,7 @@ def sortCardsIdsByTags(ids, baseTag):
     cards = cards[miscCardsCount:] + miscCards
 
     return cards
+
 
 def getNotesInfo(ids, baseTag):
 
@@ -71,43 +58,16 @@ def getNotesInfo(ids, baseTag):
 
     return notes
 
+
 def processHTML(html: str):
+    output = html
+    
+    # Cloze
     clozeRegex = "\{\{c[0-9]\:\:(.*?)(::.*}}|(}}))"
-    output = re.sub(clozeRegex, r"""<span class="cloze">\1</span>""", html)
-    return output
-
-def elementToHTML(elements):
-    # Function to convert an element to HTML string
-    def performConversion(element):
-        # Serialize the element to a string and return it
-        return etree.tostring(element, encoding='unicode', method='html')
-
-    # Generate HTML strings for selected elements
-    output = [performConversion(element) for element in elements]
-
-    # Join HTML strings into a single string
-    output = ''.join(output)
+    output = re.sub(clozeRegex, r"""<span class="cloze">\1</span>""", output)
+    
+    # Image
+    imgRegex = "\"([^\"]*?)\.?(jpg|png|svg|jpeg|webp)\""
+    output = re.sub(imgRegex, f"http://{HOST}:{str(PORT)}" + r"""/\1.\2""", output)
     
     return output
-
-
-# cleaner = Cleaner()
-# cleaner.scripts = True # This is True because we want to activate the javascript filter
-# cleaner.style = True      # This is True because we want to activate the styles & stylesheet filter
-
-# # HTML Parser
-# def getSubElementInnerHTML(input, id, logResults=False):
-#     htmlString = input
-    
-#     htmlString = cleaner.clean_html(htmlString)
-#     root = html.fromstring(htmlString)
-    
-#     results = root.xpath("//div[@id = '%s']" % id)
-#     if(logResults == True):
-#         log("RESULTS")
-#         log(input)
-#         log(results)
-#     if not results:
-#         return elementToHTML(root)
-    
-#     return elementToHTML(results)
