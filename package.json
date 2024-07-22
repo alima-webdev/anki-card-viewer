@@ -6,7 +6,8 @@
   "scripts": {
     "build-web": "cd web && npm run build",
     "git-push": "git add ./ && git commit -m 'Release' && git push origin main",
-    "release": "npm run build-web && npm run git-push && release-it",
+    "release-prep": "npm run build-web && npm run git-push",
+    "release": "npm run release-prep && release-it",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
