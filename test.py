@@ -1,8 +1,71 @@
-import json
-data = json.loads('{"cards": [{"cardId": 1555271702085, "question": null, "answer": "TEST", "isSuspended": false, "tags": ["!AK_UpdateTags::Step2decks::Cheesy-Dorian-(M3)::Family-Medicine::1-OME::12", "#AK_Original_Decks::Step_2::Cheesy_Dorian_(M3)", "#AK_Other::Card_Features::^One_By_One", "#AK_Other::Card_Features::Mnemonic", "#AK_Step1_v12::#OME::Clinical::Internal_Medicine::Cardiology::Coronary_Artery_Disease", "#AK_Step1_v12::#Physeo::09_Pharm::17_Hem/Onc_Pharm::01_Heparin_LMWH_Fondaparinux", "#AK_Step1_v12::#Physeo::^physeo_image_update", "#AK_Step1_v12::#Pixorize::03_Pharmacology::22_Cardiovascular_(New)::06_Nitrates", "#AK_Step1_v12::#Pixorize::03_Pharmacology::22_Cardiovascular_(New)::09_Statins", "#AK_Step1_v12::#UWorld::COMLEX::24307", "#AK_Step1_v12::#UWorld::Step::1196", "#AK_Step2_v12::!Shelf::#Cards_AnKing_Skipped", "#AK_Step2_v12::#B&B::02_Cardiology::02_Ischemic_Heart_Disease::01_Coronary_Artery_Disease", "#AK_Step2_v12::#B&B::02_Cardiology::02_Ischemic_Heart_Disease::02_STEMI", "#AK_Step2_v12::#OME::01_Medicine::01_Cardiology::01_Coronary_Artery_Disease", "#AK_Step2_v12::#OME::01_Medicine::01_Cardiology::02_Acute_Coronary_Syndrome", "#AK_Step2_v12::#Resources_by_rotation::FM::ome::cardio::cad", "#AK_Step2_v12::#Resources_by_rotation::IM::emma", "#AK_Step2_v12::#Resources_by_rotation::IM::ome::cardio::cad", "#AK_Step2_v12::#SketchyIM::01_Cardiology::01_Ischemic_Heart_Disease::03_Chest_Pain_Assesment_and_Plan", "#AK_Step2_v12::#SketchyIM::01_Cardiology::01_Ischemic_Heart_Disease::05_Unstable_Angina/NSTEMI", "#AK_Step2_v12::#SketchyIM::01_Cardiology::01_Ischemic_Heart_Disease::07_STEMI_Management", "#AK_Step2_v12::#Subjects::Cardiology::02_Coronary_Artery_Disease::MI", "#AK_Step2_v12::#Subjects::Cardiology::02_Coronary_Artery_Disease::MI::Management", "#AK_Step2_v12::Original_decks::Dorian::fam::ome::cardio::cad", "#AK_Step2_v12::Original_decks::Dorian::im::emma", "#AK_Step2_v12::Original_decks::Dorian::im::ome::cardio::cad", "#AK_Step3_v12::#UWorld::6420", "#PANCE::CARDIO::coronary_artery_disease", "#PANCE::EOR::IM", "ROTATIONS::IM"], "tagsOfInterest": ["#AK_Step2_v12::#OME::01_Medicine::01_Cardiology::01_Coronary_Artery_Disease", "#AK_Step2_v12::#OME::01_Medicine::01_Cardiology::02_Acute_Coronary_Syndrome"]}], "totalPages": 99}')
+"""
+import textdistance
 
-tags = data["cards"][0]["tags"]
-baseTag = "#AK_Step2_v12::#OME::01_Medicine"
-tagsOfInterest = list(filter(lambda x: x.startswith(baseTag), tags))
+tagsOfInterest = [
+    "01 Cardiology",
+    "02 Pulmonology",
+    # "#AK_Step2_v12::#OME::Clinical::01_Medicine::01_Cardiology",
+    # "#AK_Step2_v12::#OME::Clinical::01_Medicine::02_Pulmonology"
+]
 
-print(tagsOfInterest)
+tags = [
+    "!AK_UpdateTags::^temporary::ImageFix::22::done",
+    "!AK_UpdateTags::Step2decks::Cheesy-Dorian-(M3)::Family-Medicine::1-OME::13",
+    "#AK_Original_Decks::Step_2::Cheesy_Dorian_(M3)",
+    "#AK_Other::Card_Features::^One_By_One",
+    "#AK_Step2_v12::!Shelf::#Cards_AnKing_Did::4fm",
+    "#AK_Step2_v12::!Shelf::FM::no_dupes",
+    "#AK_Step2_v12::!Shelf::FM::no_dupes::only_step2",
+    "#AK_Step2_v12::!Shelf::IM::no_dupes",
+    "#AK_Step2_v12::!Shelf::IM::no_dupes::only_step2",
+    "#AK_Step2_v12::#B&B::14_Pulmonary_Critical_Care::01_Pulmonary_Disease::02_Asthma",
+    "#AK_Step2_v12::#OME::01_Medicine::02_Pulmonology::01_Asthma",
+    # "#AK_Step2_v12::#OME::Clinical::01_Medicine::02_Pulmonology::01_Asthma",
+    "#AK_Step2_v12::#Resources_by_rotation::FM::ome::pulm::asthma",
+    "#AK_Step2_v12::#Resources_by_rotation::IM::ome::pulm::asthma",
+    "#AK_Step2_v12::#Subjects::Pulmonology::05_Lungs::Obstructive_Lung_Disease::Asthma",
+    "#AK_Step2_v12::#Subjects::Pulmonology::05_Lungs::Obstructive_Lung_Disease::Asthma::Management_Redo",
+    "#AK_Step2_v12::Original_decks::Dorian::fam::ome::pulm::asthma",
+    "#AK_Step2_v12::Original_decks::Dorian::im::ome::pulm::asthma",
+    "#PANCE::PULM::obstructive_pulmonary_diseases",
+    "AnkiHub_ImageReady::Extra",
+    "AnkiHub_ImageReady::Text",
+    "ROTATIONS::IM",
+]
+
+processedTags = []
+for tag in tags:
+    processedTags = processedTags + tag.split("::")
+
+processedTags = list(set(processedTags))
+
+distances = []
+
+# distance = textdistance.hamming(tags[0], tagsOfInterest[0])
+for tag in processedTags:
+    for tagOfInterest in tagsOfInterest:
+        distance = textdistance.hamming(tag, tagOfInterest)
+        distanceJaro = textdistance.jaro(tag, tagOfInterest)
+        distanceObj = {}
+        distanceObj["tag"] = tag
+        distanceObj["tagOfInterest"] = tagOfInterest
+        distanceObj["distanceHamming"] = distance
+        distanceObj["distanceJaro"] = distanceJaro
+        distances.append(distanceObj)
+
+for d in distances:
+    print(d)
+    print("")
+
+# print("CATEGORY: ")
+# print(max(distances, key=lambda x: x["distanceJaro"]))
+
+"""
+
+
+nSubCategories = 2
+tagOfInterest = "blah::test::123::456"
+
+tagOfInterestParsed = "::".join(tagOfInterest.split("::")[0:2])
+
+print(tagOfInterestParsed)

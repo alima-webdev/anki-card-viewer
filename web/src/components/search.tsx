@@ -58,7 +58,7 @@ export function SearchComponent() {
         event.preventDefault()
     }
     return (
-        <nav id="navigation" className="sticky top-0 w-full p-4 bg-white dark:bg-black border-b z-9999">
+        <nav id="navbar" className="sticky top-0 w-full p-4 bg-white dark:bg-black border-b z-9999">
             <form ref={formRef} onSubmit={onSubmit}>
                 <div className="flex items-center space-x-4">
                     <div className="relative flex-1">

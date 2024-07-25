@@ -34,7 +34,7 @@ export const performSearch = async (query: string, cardsPerPage: number = ANKI.C
     console.log("PERFORM SEARCH")
 
     // Loading state
-    // loading.value = true
+    loading.value = true
 
     let currentPage = 0
 
@@ -56,7 +56,8 @@ export const performSearch = async (query: string, cardsPerPage: number = ANKI.C
 
     // Get the current cards in the page
     // performQuery(query, currentPage, cardsPerPage)
-    
+    performQuery(query, currentPage, cardsPerPage, baseTag)
+    return;
     let { cards, totalPages } = await performQuery(query, currentPage, cardsPerPage, baseTag)
 
     // Set the signal variables returned from the backend
@@ -87,9 +88,13 @@ export const lastSearchResultsReceived = ({ cards, totalPages }) => {
         console.info(cards, paginationInfo)
     }
 
+    document.body.scrollTop = 0
+
+    loading.value = false
+
     // Rerender the involved components
-    refreshCardGrid()
-    refreshPagination()
+    // refreshCardGrid()
+    // refreshPagination()
 }
 
 export const changePage = async (page: number) => {
@@ -98,29 +103,31 @@ export const changePage = async (page: number) => {
     if(isNaN(page) || page < 0 || page >= paginationInfo.total) return;
 
     // Loading state
-    // loading.value = true
+    loading.value = true
 
     let query = currentQuery
     let currentPage = page
     let cardsPerPage = paginationInfo.cardsPerPage
     let baseTag = currentBaseTag
 
-    let { cards } = await performQuery(query, currentPage, cardsPerPage, baseTag)
+    // performQuery(query, currentPage, cardsPerPage, baseTag)
+    // let { cards } = await performQuery(query, currentPage, cardsPerPage, baseTag)
 
     // Set the signal variables
-    currentCards = cards
+    // currentCards = cards
     paginationInfo.current = currentPage
 
     if(isDevelopment()) {
         console.info("Fn: Signals - changePage")
-        console.info(cards, paginationInfo)
+        // console.info(paginationInfo)
     }
+    performQuery(query, currentPage, cardsPerPage, baseTag)
 
     // Loading state
     // loading.value = false
 
-    refreshCardGrid()
-    refreshPagination()
+    // refreshCardGrid()
+    // refreshPagination()
 }
 
 // export const performSearch = async (query: string, page: number = 0, cardsPerPage = ANKI.CARDS_PER_PAGE) => {

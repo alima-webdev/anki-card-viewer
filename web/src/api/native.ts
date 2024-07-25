@@ -43,7 +43,6 @@ export async function initConnection() {
                 if (arrayIndexes.length >= 0) {
                     console.warn("change card info")
                     for (let index of arrayIndexes) {
-                        console.log(index)
                         currentCards[index].question = updatedNote.question
                         currentCards[index].answer = updatedNote.answer
                     }
@@ -54,6 +53,8 @@ export async function initConnection() {
 
 
             channel.objects.backend.queryFinished.connect((response) => {
+                console.log("RESPONSE")
+                console.log(response)
                 lastSearchResultsReceived(JSON.parse(response))
             });
 

@@ -1,5 +1,7 @@
 # Imports
 import re
+# import textdistance
+from thefuzz import fuzz
 
 # Anki
 from aqt import mw
@@ -10,36 +12,46 @@ from .consts import HOST, PORT
 # Devtools
 from .devtools import log
 
+def estimateTagsOfInterest(tags, tagsOfInterest, tagDepth=4):
+    
+    # Get the separate subcategories within each tag of interest
+    processedTagsOfInterest = []
+    for tagOfInterest in tagsOfInterest:
+        processedTagsOfInterest = processedTagsOfInterest + tagOfInterest.split("::")
+    
+    # Get the separate subcategories within each tag
+    processedTags = []
+    for tag in tags:
+        if(tag.startswith("#AK_Step2_v12")):
+            processedTags = processedTags + tag.split("::")
+
+    # Calculate the distance of each subcategory
+    distances = []
+    for tag in processedTags:
+        for tagOfInterest in tagsOfInterest:
+            # distance = textdistance.hamming(tag, tagOfInterest)
+            # distanceJaro = textdistance.jaro_winkler(tag, tagOfInterest)
+            distance = fuzz.ratio(tag, tagOfInterest)
+            distanceObj = {}
+            distanceObj["tag"] = tag
+            distanceObj["tagOfInterest"] = "::".join(tagOfInterest.split("::")[0:tagDepth])
+            # distanceObj["tagOfInterest"] = tagOfInterest
+            # distanceObj["distanceHamming"] = distance
+            distanceObj["distance"] = distance
+            distances.append(distanceObj)
+
+    # Return the closest tag of interest
+    distanceObj = max(distances, key=lambda x: x["distance"])
+    # Check if it is significantly similar in %
+    tagsOfInterest = ["Miscellaneous"]
+    if(int(distanceObj["distance"]) >= 10):
+        tagsOfInterest = [distanceObj["tagOfInterest"]]
+    print(distanceObj["distance"], tagsOfInterest)
+    
+    return tagsOfInterest
 
 def extractTagsOfInterest(tags, baseTag):
     return list(filter(lambda x: x.startswith(baseTag), tags))
-
-
-def sortCardsIdsByTags(ids, baseTag):
-    cards = []
-    for id in ids:
-        tags = mw.col.get_card(id).note().tags
-        tagsOfInterest = []
-        for tag in tags:
-            if baseTag in tag:
-                tagsOfInterest.append(tag)
-
-        card = {}
-        card["cardId"] = id
-        card["tagsOfInterest"] = tagsOfInterest
-        cards.append(card)
-    cards.sort(key=lambda x: x["tagsOfInterest"])
-
-    miscCardsCount = 0
-    for card in cards:
-        if len(card["tagsOfInterest"]) == 0:
-            # miscCards.push(card)
-            miscCardsCount += 1
-
-    miscCards = cards[0:miscCardsCount]
-    cards = cards[miscCardsCount:] + miscCards
-
-    return cards
 
 
 def getNotesInfo(ids, baseTag):
@@ -59,15 +71,21 @@ def getNotesInfo(ids, baseTag):
     return notes
 
 
-def processHTML(html: str):
+def processHTML(html: str, cardOrder: int = None):
     output = html
-    
+
     # Cloze
-    clozeRegex = "\{\{c[0-9]\:\:(.*?)(::.*}}|(}}))"
-    output = re.sub(clozeRegex, r"""<span class="cloze">\1</span>""", output)
-    
+    if cardOrder != None:
+        mainClozeRegex = "\{\{c" + str(cardOrder + 1) + "\:\:(.*?)(::.*}}|(}}))"
+        output = re.sub(mainClozeRegex, r"""<span class="cloze">\1</span>""", output)
+ 
+    otherClozeRegex = "\{\{c[" + ("0-9" if cardOrder == None else "^" + str(cardOrder + 1)) + "]\:\:(.*?)(::.*}}|(}}))"
+    output = re.sub(
+        otherClozeRegex, r"""<span class="cloze-inactive">\1</span>""", output
+    )
+
     # Image
-    imgRegex = "\"([^\"]*?)\.?(jpg|png|svg|jpeg|webp)\""
+    imgRegex = '"([^"]*?).?(jpg|png|svg|jpeg|webp)"'
     output = re.sub(imgRegex, f"http://{HOST}:{str(PORT)}" + r"""/\1.\2""", output)
-    
+
     return output

@@ -12,92 +12,160 @@ from aqt import mw
 
 # Internal
 from .consts import HOOKS_PREFIX, BASE_TAG
+
 # import consts
 from .utils import (
+    estimateTagsOfInterest,
     extractTagsOfInterest,
     processHTML,
 )
 
 # Devtools
 from .devtools import log
+
 # from .test import testReturn
+
 
 class Backend(QObject):
     finishedEditing = pyqtSignal(str)
     queryFinished = pyqtSignal(str)
-    
+
     def __init__(self):
         super(Backend, self).__init__()
-        
-    # Find Cards
-    @pyqtSlot(str, result=str)
-    def getQueryPage(self, options):
+
+    def queryFunction(self, options, returnObject):
         global BASE_TAG
-        
+
         # Options
         options = json.loads(options)
-        
+
         # Make sure all the required information has been given
-        if(options['query'] == None or options['currentPage'] == None or options['cardsPerPage'] == None or options['baseTag'] == None):
+        if (
+            options["query"] == None
+            or options["currentPage"] == None
+            or options["cardsPerPage"] == None
+            or options["baseTag"] == None
+        ):
             return json.dumps({})
-        
+
         # Required variables
-        query = options['query']
-        currentPage = int(options['currentPage'])
-        cardsPerPage = int(options['cardsPerPage'])
-        baseTag = options['baseTag']
-        
+        query = options["query"]
+        currentPage = int(options["currentPage"])
+        cardsPerPage = int(options["cardsPerPage"])
+        baseTag = options["baseTag"]
+
         # Set the new base tag
         BASE_TAG = baseTag
-        
+
         # Get card ids
         ids = mw.col.find_cards(query)
-        
+
+        # Save all tags of interest
+        tagsOfInterest = []
+
         # Get additional basic information (excluding the answer field)
         def prepareNote(id):
+            nonlocal tagsOfInterest
+
             cardInfo = mw.col.get_card(id)
             note = cardInfo.note()
-            card = {}
-            
+
             card = {}
             card["cardId"] = id
             card["noteId"] = note.id
+            card["cardOrder"] = cardInfo.ord
             card["isSuspended"] = cardInfo.queue == -1
             card["tags"] = note.tags
             card["tagsOfInterest"] = extractTagsOfInterest(note.tags, baseTag)
+            card["tagsOfInterestEstimated"] = False
+
+            tagsOfInterest.extend(card["tagsOfInterest"])
+
             return card
+
         cards = list(map(prepareNote, ids))
-        
+
+        tagsOfInterest = list(set(tagsOfInterest))
+
+        miscCardsCount = 0
+
+        def processMiscCards(card):
+            nonlocal miscCardsCount
+            if miscCardsCount > 100:
+                return card
+            if len(card["tagsOfInterest"]) == 0:
+                card["tagsOfInterest"] = estimateTagsOfInterest(
+                    card["tags"], tagsOfInterest
+                )
+                card["tagsOfInterestEstimated"] = True
+                # print(estimateTagsOfInterest(card["tags"], tagsOfInterest))
+                miscCardsCount += 1
+
+            return card
+
+        cards = list(map(processMiscCards, cards))
+
         # Order by tags of interest
         def sortByTagsOfInterest(card):
             isNone = True
             field = ""
-            if(len(card["tagsOfInterest"]) > 0):
+            if len(card["tagsOfInterest"]) > 0:
                 field = card["tagsOfInterest"][0]
                 isNone = False
-            return (isNone, field, card["noteId"])
+            return (isNone, field, card["noteId"], card["cardOrder"])
+
         cards = sorted(cards, key=sortByTagsOfInterest)
-        
+
         # Page index boundaries
         startIndex = currentPage * cardsPerPage
         endIndex = (currentPage + 1) * cardsPerPage
-        if(endIndex > len(cards)):
+        if endIndex > len(cards):
             endIndex = len(cards)
-        
+
         # Get the cards in the page
         cards = list(cards[startIndex:endIndex])
+
         def getCardAnswer(card):
-            card["answer"] = processHTML(mw.col.get_note(card["noteId"]).fields[0])
+            card["answer"] = processHTML(
+                mw.col.get_note(card["noteId"]).fields[0], card["cardOrder"]
+            )
             return card
+
         cards = list(map(getCardAnswer, cards))
-        
-        returnObject = {}
+
+        # returnObject = {}
         returnObject["cards"] = cards
         returnObject["totalPages"] = math.ceil(len(ids) / cardsPerPage)
-        
-        return json.dumps(returnObject)
+
+        # log(returnObject)
+
+        self.queryFinished.emit(json.dumps(returnObject))
+
+        # return json.dumps(returnObject)
+
+    # Find Cards
+    @pyqtSlot(str, result=str)
+    def getQueryPage(self, options):
+        global BASE_TAG
+
+        returnObject = {}
+
+        queryThread = threading.Thread(
+            target=self.queryFunction,
+            args=(
+                options,
+                returnObject,
+            ),
+        )
+        queryThread.setDaemon(True)
+        queryThread.start()
+        # queryThread.join()
+
+        # log(returnObject)
+        # return retValue
+
         # self.queryFinished.emit(json.dumps(returnObject))
-        
+
         # t2 = time.perf_counter(), time.process_time()
         # print(f" Real time: {t2[0] - t1[0]:.2f} seconds")
         # print(f" CPU time: {t2[1] - t1[1]:.2f} seconds")
@@ -106,6 +174,7 @@ class Backend(QObject):
     @pyqtSlot(str, result=bool)
     def editCard(self, noteId):
         from .main import editNote
+
         # noteId = mw.col.get_card(int(cardId)).note()
         editNote(int(noteId))
         return True
@@ -135,7 +204,7 @@ class Backend(QObject):
     # Unsuspend
     @pyqtSlot(str, result=bool)
     def unsuspend(self, cardId):
-        
+
         try:
             log(f"Looking for a card with ID {cardId}...")
             # Get the card from the collection by card id
