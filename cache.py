@@ -1,0 +1,6 @@
+data = {
+    "query": {
+        "request": {},
+        "results": {}
+    }
+}

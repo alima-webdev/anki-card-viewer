@@ -8,7 +8,7 @@ export let willRefreshCardGrid = signal(false)
 export let willRefreshPagination = signal(false)
 
 // Global variables
-export let currentQuery = ""
+export let currentQuery = ANKI.DEFAULT_SEARCH_QUERY
 export let currentCards = []
 export let paginationInfo = {
     current: 0,
@@ -16,6 +16,7 @@ export let paginationInfo = {
     cardsPerPage: ANKI.CARDS_PER_PAGE
 }
 export let currentBaseTag = ANKI.BASE_CATEGORY_TAG
+export let currentCategorizeMisc = ANKI.CATEGORIZE_MISC
 
 // TEST
 export let loading = signal(false)
@@ -30,33 +31,38 @@ export const refreshPagination = () => {
     willRefreshPagination.value = !willRefreshPagination.value
 }
 
-export const performSearch = async (query: string, cardsPerPage: number = ANKI.CARDS_PER_PAGE, baseTag: string = currentBaseTag, force: boolean = false) => {
-    console.log("PERFORM SEARCH")
+export const performSearch = async (query: string, cardsPerPage: number = paginationInfo.cardsPerPage, baseTag: string = currentBaseTag, categorizeMisc: boolean = false, force: boolean = false) => {
+    if(isDevelopment()) {
+        console.log("PERFORM SEARCH")
+        console.log(query, cardsPerPage, baseTag, categorizeMisc)
+    }
+
+    // Prevent query execution if it is the same as the current query, currentPage, and cardsPerPage
+    if(query == currentQuery &&
+        cardsPerPage == paginationInfo.cardsPerPage &&
+        baseTag == currentBaseTag &&
+        categorizeMisc == currentCategorizeMisc &&
+        force == false
+    ) {
+        return;
+    }
 
     // Loading state
     loading.value = true
 
     let currentPage = 0
 
-    // Prevent query execution if it is the same as the current query, currentPage, and cardsPerPage
-    if(query == currentQuery &&
-        currentPage == paginationInfo.current &&
-        cardsPerPage == paginationInfo.cardsPerPage &&
-        baseTag == currentBaseTag &&
-        force == false
-    ) {
-        return;
-    }
-
     // Set the selected signal variables
     currentQuery = query
     paginationInfo.current = currentPage
     paginationInfo.cardsPerPage = cardsPerPage
     currentBaseTag = baseTag
+    currentCategorizeMisc = categorizeMisc
 
     // Get the current cards in the page
     // performQuery(query, currentPage, cardsPerPage)
-    performQuery(query, currentPage, cardsPerPage, baseTag)
+
+    performQuery(query, currentPage, cardsPerPage, baseTag, categorizeMisc)
     return;
     let { cards, totalPages } = await performQuery(query, currentPage, cardsPerPage, baseTag)
 
@@ -121,7 +127,7 @@ export const changePage = async (page: number) => {
         console.info("Fn: Signals - changePage")
         // console.info(paginationInfo)
     }
-    performQuery(query, currentPage, cardsPerPage, baseTag)
+    performQuery(query, currentPage, cardsPerPage, baseTag, true)
 
     // Loading state
     // loading.value = false

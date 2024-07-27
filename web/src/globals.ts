@@ -19,7 +19,9 @@ export const ANKI = {
     /**
      * Base category tag to find tags or interest, which are subtags of the BASE_CATEGORY_TAG
      */
-    BASE_CATEGORY_TAG: "#AK_Step2_v12::#OME::01_Medicine"
+    // BASE_CATEGORY_TAG: "#AK_Step2_v12::#OME::01_Medicine"
+    BASE_CATEGORY_TAG: "ROTATIONS::IM",
+    CATEGORIZE_MISC: true
     // BASE_CATEGORY_TAG: "#AK_Step2_v12"
 }
  

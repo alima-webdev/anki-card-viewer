@@ -20,6 +20,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { ToastAction, ToastClose } from '@/components/ui/toast';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CardComponent } from './card';
 
 /**
  * Render the card grid component
@@ -96,6 +97,16 @@ export function CardGridComponent() {
         showToast()
     }
 
+    const acceptEstimatedTag = (event: MouseEvent) => {
+        console.log("acceptEstimatedTag")
+        let el = event.currentTarget as HTMLElement
+        let noteId = parseInt(el.getAttribute("data-note-id"))
+        let estimatedTag = el.getAttribute("data-tag")
+
+        console.log(noteId, estimatedTag)
+        event.preventDefault()
+    }
+
     // Start the current category variable
     let currentCategory = ""
 
@@ -126,12 +137,13 @@ export function CardGridComponent() {
                         // Card category
                         let category = ""
                         let tagsOfInterestParsed = []
-                        if (tagsOfInterest.length == 0) {
+                        if (tagsOfInterest.length == 0 || tagsOfInterest[0] == currentBaseTag) {
                             category = "Miscellaneous"
                         } else {
                             tagsOfInterestParsed = tagsOfInterest.map(tag => {
                                 return parseTag(tag)
                             })
+                            console.log(tagsOfInterest, currentBaseTag)
                             category = tagsOfInterest[0].replace(currentBaseTag, "").split("::").filter(Boolean)[0].replace("_", " ")
                         }
 
@@ -153,84 +165,16 @@ export function CardGridComponent() {
                                     </div>
                                     : "")}
 
-                                {/* Card */}
-                                <Card className={(isSuspended ? "suspended" : "") + " flex flex-col cursor-pointer"} data-id={cardId} data-note-id={noteId} data-suspended={isSuspended} onClick={cardClickEvent}>
-                                    <CardHeader>
-                                        {(isDevelopment() ?
-                                            <small className="text-muted-foreground">
-                                                Note: {noteId}<br />
-                                                Card: {cardId}<br />
-                                                Order: {cardOrder}<br />
-                                                {(tagsOfInterestEstimated ?
-                                                <>
-                                                    Estimated Tags:<br />
-                                                    {tagsOfInterest.join(", ")}
-                                                </>
-                                                : "")}
-
-                                            </small>
-                                            : "")}
-                                        <div class="flex items-center">
-                                            {/* Tag and Popover */}
-                                            <div className="flex-1 text-xs text-left text-muted-foreground card-tag">
-                                                <a onClick={() => { copyTagToClipboard((tagsOfInterest.length > 0 ? tagsOfInterest[0] : "")) }}>
-                                                    {(tagsOfInterestParsed.length > 0 ? tagsOfInterestParsed[0] : "Miscellaneous")}
-
-                                                    {(tagsOfInterestEstimated ?
-                                                        <div className="inline-block ms-2">
-                                                            <Sparkles className="text-yellow-500" size={12} />
-                                                        </div>
-                                                        : "")}
-                                                </a>
-                                            </div>
-
-                                            <Popover>
-                                                <PopoverTrigger>
-                                                    <a className="inline-block p-2 action">
-                                                        <TagsIcon className="h-4 w-4 text-muted-foreground"></TagsIcon>
-                                                    </a>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-4/5">
-                                                    {/* Tags of Interest */}
-                                                    {(tagsOfInterest.length > 0 ? (
-                                                        <>
-                                                            <div>
-                                                                {tagsOfInterest.map(tag => {
-                                                                    return (
-                                                                        <a className="block mb-1 text-xs cursor-pointer" onClick={() => { copyTagToClipboard(tag) }}>
-                                                                            {parseTag(tag)}
-                                                                        </a>
-                                                                    )
-                                                                })}
-                                                            </div>
-                                                            <Separator orientation="horizontal" className="my-2" />
-                                                        </>
-                                                    ) : "")}
-                                                    {/* Other Tags */}
-                                                    <div>
-                                                        {tags.map(tag => (
-                                                            <div className="mb-1 text-xs text-muted-foreground cursor-pointer" onClick={() => { copyTagToClipboard(tag) }}>
-                                                                {parseTag(tag, false)}
-                                                            </div>))}
-                                                    </div>
-                                                </PopoverContent>
-                                            </Popover>
-                                            {/* : "")} */}
-                                        </div>
-
-                                    </CardHeader>
-                                    {/* Content */}
-                                    <CardContent>
-                                        <div dangerouslySetInnerHTML={{ __html: parseCardContent(answer) }}></div>
-                                    </CardContent>
-                                    {/* Footer (suspension status switch) */}
-                                    <CardFooter className="flex flex-1 flex-col items-start justify-end">
-                                        <div className="flex items-center space-x-2">
-                                            <Switch id={`suspended-${cardId}`} checked={isSuspended} onCheckedChange={() => { suspendedCheckChanged(`suspended-${cardId}`) }} data-id={cardId} data-suspended={isSuspended} />
-                                            <Label htmlFor={`suspended-${cardId}`} className="text-muted-foreground">Suspended</Label>
-                                        </div>
-                                    </CardFooter>
-                                </Card>
+                                <CardComponent
+                                    cardId={cardId}
+                                    noteId={noteId}
+                                    cardOrder={cardOrder}
+                                    answer={answer}
+                                    isSuspended={isSuspended}
+                                    tags={tags}
+                                    tagsOfInterestEstimated={tagsOfInterestEstimated}
+                                    tagsOfInterest={tagsOfInterest}
+                                ></CardComponent>
                             </>
                         )
                     }) : "")}

@@ -13,17 +13,12 @@ import { log } from "../devtools"
 import { currentQuery, loading, paginationInfo } from "../signals"
 
 /**
- * Variable that defines if the API has been initiate and is ready for use
- */
-export let APIReady = false
-
-/**
  * Initiate the API and QWebChannel connection
  * Set APIReady to true when initialization is finished
  */
 export async function initAPI() {
-    await Connector.initConnection()
-    APIReady = true
+    // await Connector.initConnection()
+    await Connector.init()
 }
 
 /**
@@ -32,8 +27,8 @@ export async function initAPI() {
  * @param {query} string - Search criteria
  * @returns {QueryResults}
  */
-export async function performQuery(query: string, currentPage: number, cardsPerPage: number, baseTag: string) {
-    return (await Connector.getCardsFromQuery(query, currentPage, cardsPerPage, baseTag))
+export async function performQuery(query: string, currentPage: number, cardsPerPage: number, baseTag: string, categorizeMisc: Boolean = false) {
+    return (await Connector.query(query, currentPage, cardsPerPage, baseTag, categorizeMisc))
 }
 
 /**
@@ -77,6 +72,10 @@ export async function suspend(cardId: number) {
  */
 export async function unsuspend(cardId: number) {
     return (await Connector.unsuspend(cardId))
+}
+
+export async function applyGeneratedTags() {
+    return await Connector.applyGeneratedTags()
 }
 
 export {

@@ -1,13 +1,13 @@
 // Imports
 // UI
 import { Input } from "@/components/ui/input";
-import { CogIcon, Search } from "lucide-react";
+import { Cog, CogIcon, Save, SaveAll, Search } from "lucide-react";
 
 // Internal
 import { ANKI } from "../globals";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRef } from "preact/hooks";
-import { currentBaseTag, paginationInfo, performSearch } from "../signals";
+import { currentBaseTag, currentCategorizeMisc, currentQuery, paginationInfo, performSearch } from "../signals";
 
 // Devtools
 import { isDevelopment } from "../devtools";
@@ -15,6 +15,11 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { PopoverClose, PopoverTrigger } from "@radix-ui/react-popover";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { applyGeneratedTags } from "../api/api";
+import { Separator } from "@/components/ui/separator";
+import { FormControl, FormField, FormItem } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 
 /**
  * Render the search / query component
@@ -24,27 +29,26 @@ import { Button } from "@/components/ui/button";
  */
 export function SearchComponent() {
 
+    const form = useForm({
+        defaultValues: {
+            query: currentQuery,
+            cardsPerPage: String(paginationInfo.cardsPerPage),
+            baseTag: currentBaseTag,
+            categorizeMisc: currentCategorizeMisc,
+        },
+    })
+
     const formRef = useRef(null)
     const baseTagInputRef = useRef(null)
+    const categorizeMiscInputRef = useRef(null)
 
     // Event: Search Form Submission
-    const onSubmit = (event: SubmitEvent) => {
+    const onSubmit = (data) => {
 
-        // Get the form data
-        const data = new FormData(event.currentTarget as HTMLFormElement);
+        // Perform the query
+        performSearch(data.query, parseInt(data.cardsPerPage), data.baseTag, data.categorizeMisc)
 
-        const query = data.get("query") as string
-        const cardsPerPage = parseInt(data.get("cardsPerPage") as string)
-        const baseTag = (baseTagInputRef.current ? baseTagInputRef.current.value as string : currentBaseTag)
-
-        if (isDevelopment()) {
-            console.info("Fn: Perform Search")
-            console.info("Query: ", query, "  |  Cards Per Page: ", cardsPerPage)
-        }
-
-        // Save the query string to the searchQuery signal, which will trigger the query process
-        performSearch(query, cardsPerPage, baseTag)
-
+        // Prevents reload
         event.preventDefault()
     }
 
@@ -57,18 +61,31 @@ export function SearchComponent() {
         searchSettingsChange()
         event.preventDefault()
     }
+
+    const applyTags = (event: MouseEvent) => {
+        applyGeneratedTags()
+        event.preventDefault()
+    }
     return (
         <nav id="navbar" className="sticky top-0 w-full p-4 bg-white dark:bg-black border-b z-9999">
-            <form ref={formRef} onSubmit={onSubmit}>
+            <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)}>
                 <div className="flex items-center space-x-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
+
+                        <FormField
+                            control={form.control}
                             name="query"
-                            type="search"
-                            placeholder="Search..."
-                            className="w-full rounded-lg bg-background pl-8"
-                            value={ANKI.DEFAULT_SEARCH_QUERY}
+                            render={({ field }) => (
+                                <Input
+                                    className="w-full rounded-lg bg-background pl-8"
+                                    placeholder="Search..."
+                                    id={field.name}
+                                    name={field.name}
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                />
+                            )}
                         />
                     </div>
                     <div className="flex flex-row items-center gap-2">
@@ -76,33 +93,84 @@ export function SearchComponent() {
                             Cards per Page:
                         </Label>
                         <div class="flex-shrink">
-                            <Select id="cardsPerPage" name="cardsPerPage" defaultValue={String(paginationInfo.cardsPerPage)} onValueChange={searchSettingsChange}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Cards per Page" />
-                                </SelectTrigger>
-                                <SelectContent className="z-9999">
-                                    <SelectGroup>
-                                        <SelectLabel>Cards per Page</SelectLabel>
-                                        {ANKI.CARDS_PER_PAGE_OPTIONS.map(cardsPerPageOption => (
-                                            <SelectItem value={String(cardsPerPageOption)}>{String(cardsPerPageOption)}</SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+
+                            <FormField
+                                control={form.control}
+                                name="cardsPerPage"
+                                render={({ field }) => {
+                                    const onChangeFunction = (value) => {
+                                        field.onChange(value)
+                                        form.handleSubmit(onSubmit)()
+                                    }
+                                    return (
+                                        <Select
+                                            onValueChange={onChangeFunction}
+                                            {...field}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Cards per Page" />
+                                            </SelectTrigger>
+                                            <SelectContent className="z-9999">
+                                                <SelectGroup>
+                                                    <SelectLabel>Cards per Page</SelectLabel>
+                                                    {ANKI.CARDS_PER_PAGE_OPTIONS.map(cardsPerPageOption => (
+                                                        <SelectItem value={String(cardsPerPageOption)}>{String(cardsPerPageOption)}</SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                } />
                         </div>
                         <div className="flex-shrink">
-                            <Popover onOpenChange={() => { baseTagInputRef.current.value = currentBaseTag }}>
-                                <PopoverTrigger>
-                                    <Button type="button" size="icon" variant="outline" className="action">
-                                        <CogIcon className="h-4 w-4 text-muted-foreground"></CogIcon>
-                                    </Button>
+                            {/* <Popover onOpenChange={() => { baseTagInputRef.current.value = currentBaseTag }}> */}
+                            <Popover>
+                                <PopoverTrigger className="action">
+                                    <a className="flex p-2 ms-1">
+                                        <Cog className="h-4 w-4 text-muted-foreground"></Cog>
+                                    </a>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-96 mx-4 z-9999">
                                     <form onSubmit={applySettings} className="flex flex-col gap-4">
-                                        <Label htmlFor="baseTag">Base Category Tag</Label>
-                                        <Input ref={baseTagInputRef} placeholder="e.g. #AK_Step2_v12..." value={currentBaseTag} />
+                                        <Label htmlFor="baseTag">Root Category Tag</Label>
+                                        <FormField
+                                            control={form.control}
+                                            name="baseTag"
+                                            render={({ field }) => (
+                                                <Input ref={baseTagInputRef} placeholder="e.g. #AK_Step2_v12..." {...field} />
+                                            )}
+                                        />
+                                        {/* <Input ref={baseTagInputRef} placeholder="e.g. #AK_Step2_v12..." value={currentBaseTag} /> */}
+
+                                        {/* <Separator /> */}
+                                        <div>
+                                            <div class="flex flex-row gap-2 items-center">
+
+                                                <FormField
+                                                    control={form.control}
+                                                    name="categorizeMisc"
+                                                    render={({ field }) => (
+                                                        <>
+                                                            <Switch ref={categorizeMiscInputRef} id={field.name} name={field.name} checked={field.value} onCheckedChange={field.onChange} {...field} />
+                                                            <Label htmlFor={field.name} className="flex-1">
+                                                                Categorize Miscellaneous Notes
+                                                            </Label>
+                                                        </>
+                                                    )}
+                                                />
+                                                {/* <Switch ref={categorizeMiscInputRef} id="estimateTags" name="estimateTags" defaultChecked={currentCategorizeMisc} /> */}
+                                                <Button variant="secondary" size="icon" onClick={applyTags}>
+                                                    <SaveAll className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                Notes will be categorized based on how well they match the subtags within the root tag.<br />
+                                                Back up your deck before making these changes permanent.
+                                            </p>
+                                        </div>
+                                        {/* <Separator /> */}
                                         <PopoverClose asChild>
-                                            <Button type="submit" className="w-20">Apply</Button>
+                                            <Button type="submit" className="w-32">Apply Settings</Button>
                                         </PopoverClose>
                                     </form>
                                 </PopoverContent>
@@ -111,6 +179,6 @@ export function SearchComponent() {
                     </div>
                 </div>
             </form>
-        </nav>
+        </nav >
     )
 }

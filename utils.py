@@ -1,7 +1,10 @@
 # Imports
+import importlib
 import re
+import subprocess
+import sys
 # import textdistance
-from thefuzz import fuzz
+# from thefuzz import fuzz
 
 # Anki
 from aqt import mw
@@ -12,7 +15,23 @@ from .consts import HOST, PORT
 # Devtools
 from .devtools import log
 
-def estimateTagsOfInterest(tags, tagsOfInterest, tagDepth=4):
+try:
+    from thefuzz import fuzz
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", 'thefuzz'])
+finally:
+    from thefuzz import fuzz
+
+# {
+#     "noteId": list[str]
+# }
+estimatedTags = {}
+
+def estimateTagsOfInterest(tags: list[str], tagsOfInterest: list[str], noteId: int, tagDepth: int = 4):
+    
+    # Look into the cache first
+    if(str(noteId)in estimatedTags):
+        return estimatedTags[str(noteId)]
     
     # Get the separate subcategories within each tag of interest
     processedTagsOfInterest = []
@@ -20,7 +39,7 @@ def estimateTagsOfInterest(tags, tagsOfInterest, tagDepth=4):
         processedTagsOfInterest = processedTagsOfInterest + tagOfInterest.split("::")
     
     # Get the separate subcategories within each tag
-    processedTags = []
+    processedTags: list[str] = []
     for tag in tags:
         if(tag.startswith("#AK_Step2_v12")):
             processedTags = processedTags + tag.split("::")
@@ -31,7 +50,7 @@ def estimateTagsOfInterest(tags, tagsOfInterest, tagDepth=4):
         for tagOfInterest in tagsOfInterest:
             # distance = textdistance.hamming(tag, tagOfInterest)
             # distanceJaro = textdistance.jaro_winkler(tag, tagOfInterest)
-            distance = fuzz.ratio(tag, tagOfInterest)
+            distance = fuzz.ratio(tag.lower(), tagOfInterest.lower())
             distanceObj = {}
             distanceObj["tag"] = tag
             distanceObj["tagOfInterest"] = "::".join(tagOfInterest.split("::")[0:tagDepth])
@@ -44,13 +63,18 @@ def estimateTagsOfInterest(tags, tagsOfInterest, tagDepth=4):
     distanceObj = max(distances, key=lambda x: x["distance"])
     # Check if it is significantly similar in %
     tagsOfInterest = ["Miscellaneous"]
-    if(int(distanceObj["distance"]) >= 10):
-        tagsOfInterest = [distanceObj["tagOfInterest"]]
-    print(distanceObj["distance"], tagsOfInterest)
+    # if(int(distanceObj["distance"]) >= 10):
+    tagsOfInterest = [distanceObj["tagOfInterest"]]
+    # print(distanceObj["distance"], tagsOfInterest)
+    
+    # Save the calculated tag of interest in the array
+    estimatedTags[str(noteId)] = tagsOfInterest
     
     return tagsOfInterest
 
-def extractTagsOfInterest(tags, baseTag):
+def extractTagsOfInterest(tags, baseTag: str):
+    if(not baseTag.endswith("::")):
+        baseTag = baseTag + "::"
     return list(filter(lambda x: x.startswith(baseTag), tags))
 
 
