@@ -4,7 +4,7 @@ import re
 import subprocess
 import sys
 # import textdistance
-# from thefuzz import fuzz
+from thefuzz import fuzz
 
 # Anki
 from aqt import mw
@@ -15,12 +15,12 @@ from .consts import HOST, PORT
 # Devtools
 from .devtools import log
 
-try:
-    from thefuzz import fuzz
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", 'thefuzz'])
-finally:
-    from thefuzz import fuzz
+# try:
+#     from thefuzz import fuzz
+# except ImportError:
+#     subprocess.check_call([sys.executable, "-m", "pip", "install", 'thefuzz'])
+# finally:
+#     from thefuzz import fuzz
 
 # {
 #     "noteId": list[str]
