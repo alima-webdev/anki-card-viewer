@@ -8,7 +8,7 @@ from aqt.qt import (
     pyqtSignal,
     QApplication
 )
-from aqt import QKeyEvent, QSettings, QSplitter, QWebChannel, QWebEnginePage, QWebEngineSettings, QWidget, mw, gui_hooks
+from aqt import QCloseEvent, QKeyEvent, QSettings, QSplitter, QWebChannel, QWebEnginePage, QWebEngineSettings, QWidget, mw, gui_hooks
 
 from aqt.browser.previewer import BrowserPreviewer as PreviewDialog
 
