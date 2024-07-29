@@ -1,3 +1,4 @@
+import ctypes
 import json
 from aqt.qt import (
     Qt,
@@ -54,7 +55,7 @@ class CardViewerDialog(QDialog):
         self.channel.registerObject("backend", self.backend)
 
         # Navigate
-        self.navigate("web/dist/index.html")
+        # self.navigate("web/dist/index.html")
 
         # Editor
         self.editorWidget = QWidget()
@@ -114,6 +115,7 @@ class CardViewerDialog(QDialog):
     def open(self):
         self.show()
         self.exec()
+        self.navigate("web/dist/index.html")
 
     # Navigate to the game interface URL
     def navigate(self, path):
@@ -131,3 +133,15 @@ class CardViewerDialog(QDialog):
     # Resize the QWebEngineView to match the dialog size
     def resizeWebView(self):
         self.webview.resize(self.size())
+    
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
+        
+        print("CLOSE")
+        
+        if(Backend.queryThread is not None):
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(Backend.queryThread.native_id,
+              ctypes.py_object(SystemExit))
+        print("CLOSE THREAD")
+        
+        
+        return super().closeEvent(a0)

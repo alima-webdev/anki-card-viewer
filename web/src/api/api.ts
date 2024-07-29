@@ -27,8 +27,8 @@ export async function initAPI() {
  * @param {query} string - Search criteria
  * @returns {QueryResults}
  */
-export async function performQuery(query: string, currentPage: number, cardsPerPage: number, baseTag: string, categorizeMisc: Boolean = false) {
-    return (await Connector.query(query, currentPage, cardsPerPage, baseTag, categorizeMisc))
+export async function performQuery(query: string, currentPage: number, cardsPerPage: number, baseTag: string, categorizeMisc: Boolean = false, categorizeMiscDepth: number = 4) {
+    return (await Connector.query(query, currentPage, cardsPerPage, baseTag, categorizeMisc, categorizeMiscDepth))
 }
 
 /**

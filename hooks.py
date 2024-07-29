@@ -1,6 +1,7 @@
 # Imports
 # External Libraries
 import asyncio
+import ctypes
 import json
 import math
 import threading
@@ -31,6 +32,8 @@ class Backend(QObject):
     # Signals to the browser
     finishedEditing = pyqtSignal(str)
     queryFinished = pyqtSignal(str)
+    
+    queryThread = None
 
     def __init__(self):
         super(Backend, self).__init__()
@@ -40,17 +43,21 @@ class Backend(QObject):
     def query(self, options):
         global BASE_TAG
 
+        if(Backend.queryThread is not None):
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(Backend.queryThread.native_id,
+              ctypes.py_object(SystemExit))
+
         returnObject = {}
 
-        queryThread = threading.Thread(
+        self.queryThread = threading.Thread(
             target=self.queryFunction,
             args=(
                 options,
                 returnObject,
             )
         )
-        queryThread.setDaemon(True)
-        queryThread.start()
+        self.queryThread.setDaemon(True)
+        self.queryThread.start()
         
     # def queryFinished():
     #     log("QUERY FINISHED")
@@ -114,7 +121,7 @@ class Backend(QObject):
     
     @pyqtSlot(result=bool)
     def applyGeneratedTags(self):
-        print(cache["query"]["results"])
+        # print(cache["query"]["results"])
         # Get the notes for update
         cards = list(filter(lambda card: card["tagsOfInterestEstimated"] == True, cache["query"]["results"]["cards"]))
         notes = []
@@ -134,115 +141,120 @@ class Backend(QObject):
     # When the user performs a query, changes page, etc.
     def queryFunction(self, options, returnObject):
         global BASE_TAG
-
-        # Options
-        options = json.loads(options)
         
-        print(options)
+        try:
 
-        # Make sure all the required information has been given
-        if (
-            options["query"] == None
-            or options["currentPage"] == None
-            or options["cardsPerPage"] == None
-            or options["baseTag"] == None
-            or options["categorizeMisc"] == None
-        ):
-            return json.dumps({})
+            # Options
+            options = json.loads(options)
+            
+            # print(options)
 
-        # Required variables
-        query = options["query"]
-        currentPage = int(options["currentPage"])
-        cardsPerPage = int(options["cardsPerPage"])
-        baseTag = options["baseTag"]
+            # Make sure all the required information has been given
+            if (
+                options["query"] == None
+                or options["currentPage"] == None
+                or options["cardsPerPage"] == None
+                or options["baseTag"] == None
+                or options["categorizeMisc"] == None
+                or options["categorizeMiscDepth"] == None
+            ):
+                return json.dumps({})
 
-        # Set the new base tag
-        BASE_TAG = baseTag
+            # Required variables
+            query = options["query"]
+            currentPage = int(options["currentPage"])
+            cardsPerPage = int(options["cardsPerPage"])
+            baseTag = options["baseTag"]
 
-        # Get card ids
-        ids = mw.col.find_cards(query)
+            # Set the new base tag
+            BASE_TAG = baseTag
 
-        # Save all tags of interest
-        tagsOfInterest = []
+            # Get card ids
+            ids = mw.col.find_cards(query)
 
-        # Get additional basic information (excluding the answer field)
-        def prepareNote(id):
-            nonlocal tagsOfInterest
+            # Save all tags of interest
+            tagsOfInterest = []
 
-            cardInfo = mw.col.get_card(id)
-            note = cardInfo.note()
+            # Get additional basic information (excluding the answer field)
+            def prepareNote(id):
+                nonlocal tagsOfInterest
 
-            card = {}
-            card["cardId"] = id
-            card["noteId"] = note.id
-            card["cardOrder"] = cardInfo.ord
-            card["isSuspended"] = cardInfo.queue == -1
-            card["tags"] = note.tags
-            card["tagsOfInterest"] = extractTagsOfInterest(note.tags, baseTag)
-            card["tagsOfInterestEstimated"] = False
+                cardInfo = mw.col.get_card(id)
+                note = cardInfo.note()
 
-            tagsOfInterest.extend(card["tagsOfInterest"])
+                card = {}
+                card["cardId"] = id
+                card["noteId"] = note.id
+                card["cardOrder"] = cardInfo.ord
+                card["isSuspended"] = cardInfo.queue == -1
+                card["tags"] = note.tags
+                card["tagsOfInterest"] = extractTagsOfInterest(note.tags, baseTag)
+                card["tagsOfInterestEstimated"] = False
 
-            return card
-        cards = list(map(prepareNote, ids))
+                tagsOfInterest.extend(card["tagsOfInterest"])
 
-        tagsOfInterest = list(set(tagsOfInterest))
+                return card
+            cards = list(map(prepareNote, ids))
 
-        # miscCardsCount = 0
+            tagsOfInterest = list(set(tagsOfInterest))
 
-        def processMiscCards(card):
-            # nonlocal miscCardsCount
-            # TEST
-            # if miscCardsCount > 100:
-            #     return card
-            if len(card["tagsOfInterest"]) == 0:
-                card["tagsOfInterest"] = estimateTagsOfInterest(
-                    card["tags"], tagsOfInterest, card["noteId"]
+            # miscCardsCount = 0
+
+            def processMiscCards(card):
+                # nonlocal miscCardsCount
+                # TEST
+                # if miscCardsCount > 100:
+                #     return card
+                if len(card["tagsOfInterest"]) == 0:
+                    card["tagsOfInterest"] = estimateTagsOfInterest(
+                        card["tags"], tagsOfInterest, card["noteId"], int(options["categorizeMiscDepth"])
+                    )
+                    card["tagsOfInterestEstimated"] = True
+                    # print(estimateTagsOfInterest(card["tags"], tagsOfInterest))
+                    # miscCardsCount += 1
+
+                return card
+
+            if(options["categorizeMisc"] == True):
+                cards = list(map(processMiscCards, cards))
+
+            # Order by tags of interest
+            def sortByTagsOfInterest(card):
+                isNone = True
+                field = ""
+                if len(card["tagsOfInterest"]) > 0:
+                    field = card["tagsOfInterest"][0]
+                    isNone = False
+                return (isNone, field, card["tagsOfInterestEstimated"], card["noteId"], card["cardOrder"])
+
+            cards = sorted(cards, key=sortByTagsOfInterest)
+
+            # Page index boundaries
+            startIndex = currentPage * cardsPerPage
+            endIndex = (currentPage + 1) * cardsPerPage
+            if endIndex > len(cards):
+                endIndex = len(cards)
+
+            # Get the cards in the page
+            cards = list(cards[startIndex:endIndex])
+
+            # Get the answer/content of the card
+            def getCardAnswer(card):
+                card["answer"] = processHTML(
+                    mw.col.get_note(card["noteId"]).fields[0], card["cardOrder"]
                 )
-                card["tagsOfInterestEstimated"] = True
-                # print(estimateTagsOfInterest(card["tags"], tagsOfInterest))
-                # miscCardsCount += 1
+                return card
+            cards = list(map(getCardAnswer, cards))
 
-            return card
+            # Create the return object
+            returnObject["cards"] = cards
+            returnObject["totalPages"] = math.ceil(len(ids) / cardsPerPage)
 
-        if(options["categorizeMisc"] == True):
-            cards = list(map(processMiscCards, cards))
+            # Cache the query
+            cache["query"]["request"] = options
+            cache["query"]["results"] = returnObject
 
-        # Order by tags of interest
-        def sortByTagsOfInterest(card):
-            isNone = True
-            field = ""
-            if len(card["tagsOfInterest"]) > 0:
-                field = card["tagsOfInterest"][0]
-                isNone = False
-            return (isNone, card["tagsOfInterestEstimated"], field, card["noteId"], card["cardOrder"])
-
-        cards = sorted(cards, key=sortByTagsOfInterest)
-
-        # Page index boundaries
-        startIndex = currentPage * cardsPerPage
-        endIndex = (currentPage + 1) * cardsPerPage
-        if endIndex > len(cards):
-            endIndex = len(cards)
-
-        # Get the cards in the page
-        cards = list(cards[startIndex:endIndex])
-
-        # Get the answer/content of the card
-        def getCardAnswer(card):
-            card["answer"] = processHTML(
-                mw.col.get_note(card["noteId"]).fields[0], card["cardOrder"]
-            )
-            return card
-        cards = list(map(getCardAnswer, cards))
-
-        # Create the return object
-        returnObject["cards"] = cards
-        returnObject["totalPages"] = math.ceil(len(ids) / cardsPerPage)
-
-        # Cache the query
-        cache["query"]["request"] = options
-        cache["query"]["results"] = returnObject
-
-        # Emit the signal
-        self.queryFinished.emit(json.dumps(returnObject))
+            # Emit the signal
+            self.queryFinished.emit(json.dumps(returnObject))
+        finally: 
+            print("THREAD DONE")

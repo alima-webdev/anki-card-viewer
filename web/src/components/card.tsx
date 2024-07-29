@@ -154,7 +154,7 @@ export function CardComponent({ cardId, noteId, cardOrder, answer, isSuspended, 
             </CardContent>
             {/* Footer (suspension status switch) */}
             <CardFooter className="flex flex-1 flex-col items-start justify-end">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 action">
                     <Switch id={`suspended-${cardId}`} checked={isSuspended} onCheckedChange={() => { suspendedCheckChanged(`suspended-${cardId}`) }} data-id={cardId} data-suspended={isSuspended} />
                     <Label htmlFor={`suspended-${cardId}`} className="text-muted-foreground">Suspended</Label>
                 </div>

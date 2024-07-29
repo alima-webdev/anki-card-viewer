@@ -36,7 +36,7 @@ export function App() {
     useEffect(() => {
         const performEffect = async () => {
             await initAPI()
-            performSearch(ANKI.DEFAULT_SEARCH_QUERY, ANKI.CARDS_PER_PAGE, ANKI.BASE_CATEGORY_TAG, ANKI.CATEGORIZE_MISC, true)
+            performSearch(ANKI.DEFAULT_SEARCH_QUERY, ANKI.CARDS_PER_PAGE, ANKI.BASE_CATEGORY_TAG, ANKI.CATEGORIZE_MISC, ANKI.CATEGORIZE_MISC_DEPTH, true)
         }
         performEffect()
     }, [])
@@ -45,6 +45,7 @@ export function App() {
         <main className="dark:dark">
             <SearchComponent />
             <div className="p-4 grid grid-rows gap-4">
+                <PaginationComponent />
                 <CardGridComponent />
                 <PaginationComponent />
             </div>

@@ -21,7 +21,8 @@ export const ANKI = {
      */
     // BASE_CATEGORY_TAG: "#AK_Step2_v12::#OME::01_Medicine"
     BASE_CATEGORY_TAG: "ROTATIONS::IM",
-    CATEGORIZE_MISC: true
+    CATEGORIZE_MISC: false,
+    CATEGORIZE_MISC_DEPTH: 4,
     // BASE_CATEGORY_TAG: "#AK_Step2_v12"
 }
  

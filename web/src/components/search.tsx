@@ -7,7 +7,7 @@ import { Cog, CogIcon, Save, SaveAll, Search } from "lucide-react";
 import { ANKI } from "../globals";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRef } from "preact/hooks";
-import { currentBaseTag, currentCategorizeMisc, currentQuery, paginationInfo, performSearch } from "../signals";
+import { currentBaseTag, currentCategorizeMisc, currentCategorizeMiscDepth, currentQuery, paginationInfo, performSearch } from "../signals";
 
 // Devtools
 import { isDevelopment } from "../devtools";
@@ -35,6 +35,7 @@ export function SearchComponent() {
             cardsPerPage: String(paginationInfo.cardsPerPage),
             baseTag: currentBaseTag,
             categorizeMisc: currentCategorizeMisc,
+            categorizeMiscDepth: currentCategorizeMiscDepth,
         },
     })
 
@@ -46,7 +47,7 @@ export function SearchComponent() {
     const onSubmit = (data) => {
 
         // Perform the query
-        performSearch(data.query, parseInt(data.cardsPerPage), data.baseTag, data.categorizeMisc)
+        performSearch(data.query, parseInt(data.cardsPerPage), data.baseTag, data.categorizeMisc, parseInt(data.categorizeMiscDepth))
 
         // Prevents reload
         event.preventDefault()
@@ -119,7 +120,8 @@ export function SearchComponent() {
                                                 </SelectGroup>
                                             </SelectContent>
                                         </Select>
-                                    )}
+                                    )
+                                }
                                 } />
                         </div>
                         <div className="flex-shrink">
@@ -143,9 +145,9 @@ export function SearchComponent() {
                                         {/* <Input ref={baseTagInputRef} placeholder="e.g. #AK_Step2_v12..." value={currentBaseTag} /> */}
 
                                         {/* <Separator /> */}
-                                        <div>
-                                            <div class="flex flex-row gap-2 items-center">
 
+                                        <div className="bg-slate-50 p-4">
+                                            <div class="flex flex-row gap-2 items-center mb-4">
                                                 <FormField
                                                     control={form.control}
                                                     name="categorizeMisc"
@@ -158,15 +160,39 @@ export function SearchComponent() {
                                                         </>
                                                     )}
                                                 />
-                                                {/* <Switch ref={categorizeMiscInputRef} id="estimateTags" name="estimateTags" defaultChecked={currentCategorizeMisc} /> */}
-                                                <Button variant="secondary" size="icon" onClick={applyTags}>
-                                                    <SaveAll className="h-4 w-4" />
+                                            </div>
+                                            <div class="flex flex-row gap-2 items-center mb-4">
+                                                <FormField
+                                                    control={form.control}
+                                                    name="categorizeMiscDepth"
+                                                    render={({ field }) => (
+                                                        <>
+                                                            <Label htmlFor={field.name} className="flex-1">
+                                                                Analysis Depth
+                                                            </Label>
+                                                            <Input
+                                                                className="w-12 rounded-lg bg-background text-center"
+                                                                type="text"
+                                                                id={field.name}
+                                                                name={field.name}
+                                                                value={field.value}
+                                                                onChange={field.onChange}
+                                                            />
+                                                        </>
+                                                    )}
+                                                />
+                                            </div>
+                                            <div className="text-xs text-muted-foreground mb-4">
+                                                Notes will be categorized based on how well they match the subtags within the root tag.
+                                            </div>
+                                            <div className="mb-2">
+                                                <Button variant="outline" size="sm" type="button" onClick={applyTags}>
+                                                    Save Generated Tags
                                                 </Button>
                                             </div>
-                                            <p className="text-xs text-muted-foreground">
-                                                Notes will be categorized based on how well they match the subtags within the root tag.<br />
+                                            <div className="text-xs text-muted-foreground">
                                                 Back up your deck before making these changes permanent.
-                                            </p>
+                                            </div>
                                         </div>
                                         {/* <Separator /> */}
                                         <PopoverClose asChild>

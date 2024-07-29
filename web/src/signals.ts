@@ -17,6 +17,7 @@ export let paginationInfo = {
 }
 export let currentBaseTag = ANKI.BASE_CATEGORY_TAG
 export let currentCategorizeMisc = ANKI.CATEGORIZE_MISC
+export let currentCategorizeMiscDepth = ANKI.CATEGORIZE_MISC_DEPTH
 
 // TEST
 export let loading = signal(false)
@@ -31,7 +32,7 @@ export const refreshPagination = () => {
     willRefreshPagination.value = !willRefreshPagination.value
 }
 
-export const performSearch = async (query: string, cardsPerPage: number = paginationInfo.cardsPerPage, baseTag: string = currentBaseTag, categorizeMisc: boolean = false, force: boolean = false) => {
+export const performSearch = async (query: string, cardsPerPage: number = paginationInfo.cardsPerPage, baseTag: string = currentBaseTag, categorizeMisc: boolean = false, categorizeMiscDepth: number = currentCategorizeMiscDepth, force: boolean = false) => {
     if(isDevelopment()) {
         console.log("PERFORM SEARCH")
         console.log(query, cardsPerPage, baseTag, categorizeMisc)
@@ -42,6 +43,7 @@ export const performSearch = async (query: string, cardsPerPage: number = pagina
         cardsPerPage == paginationInfo.cardsPerPage &&
         baseTag == currentBaseTag &&
         categorizeMisc == currentCategorizeMisc &&
+        categorizeMiscDepth == currentCategorizeMiscDepth &&
         force == false
     ) {
         return;
@@ -58,11 +60,12 @@ export const performSearch = async (query: string, cardsPerPage: number = pagina
     paginationInfo.cardsPerPage = cardsPerPage
     currentBaseTag = baseTag
     currentCategorizeMisc = categorizeMisc
+    currentCategorizeMiscDepth = categorizeMiscDepth
 
     // Get the current cards in the page
     // performQuery(query, currentPage, cardsPerPage)
 
-    performQuery(query, currentPage, cardsPerPage, baseTag, categorizeMisc)
+    performQuery(query, currentPage, cardsPerPage, baseTag, categorizeMisc, categorizeMiscDepth)
     return;
     let { cards, totalPages } = await performQuery(query, currentPage, cardsPerPage, baseTag)
 
@@ -127,7 +130,7 @@ export const changePage = async (page: number) => {
         console.info("Fn: Signals - changePage")
         // console.info(paginationInfo)
     }
-    performQuery(query, currentPage, cardsPerPage, baseTag, true)
+    performQuery(query, currentPage, cardsPerPage, baseTag, currentCategorizeMisc, currentCategorizeMiscDepth)
 
     // Loading state
     // loading.value = false

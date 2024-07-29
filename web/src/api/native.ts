@@ -5,7 +5,7 @@ import { getContent, processTags } from "./utils"
 
 // Devtools
 import { isDevelopment, log } from "../devtools"
-import { currentBaseTag, currentCards, currentQuery, lastSearchResultsReceived, paginationInfo, refreshCardGrid } from "../signals";
+import { currentBaseTag, currentCards, currentCategorizeMisc, currentCategorizeMiscDepth, currentQuery, lastSearchResultsReceived, paginationInfo, refreshCardGrid } from "../signals";
 
 class NativeConnector {
     /**
@@ -78,7 +78,7 @@ class NativeConnector {
      * @param {query} string - Search criteria
      * @returns {Promise<BasicCardInfo[]>}
      */
-async query(query: string = currentQuery, currentPage: number = 0, cardsPerPage: number = paginationInfo.cardsPerPage, baseTag: string = currentBaseTag, categorizeMisc: Boolean = false): Promise<QueryResults> {
+async query(query: string = currentQuery, currentPage: number = 0, cardsPerPage: number = paginationInfo.cardsPerPage, baseTag: string = currentBaseTag, categorizeMisc: Boolean = currentCategorizeMisc, categorizeMiscDepth: number = currentCategorizeMiscDepth): Promise<QueryResults> {
         // Perform checks
         if (this.ready == false) {
             console.warn("API not ready")
@@ -98,7 +98,8 @@ async query(query: string = currentQuery, currentPage: number = 0, cardsPerPage:
             currentPage: currentPage,
             cardsPerPage: cardsPerPage,
             baseTag: baseTag,
-            categorizeMisc: categorizeMisc
+            categorizeMisc: categorizeMisc,
+            categorizeMiscDepth: categorizeMiscDepth
         }
         if (isDevelopment()) {
             console.log("Fn: Native - getCardsFromQuery")

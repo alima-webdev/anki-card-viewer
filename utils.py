@@ -26,12 +26,16 @@ from .devtools import log
 #     "noteId": list[str]
 # }
 estimatedTags = {}
+lastTagDepth = 4
 
 def estimateTagsOfInterest(tags: list[str], tagsOfInterest: list[str], noteId: int, tagDepth: int = 4):
     
-    # Look into the cache first
-    if(str(noteId)in estimatedTags):
-        return estimatedTags[str(noteId)]
+    # print("DEPTH " + str(tagDepth))
+    
+    # Look into the cache first if the variables are different
+    if(tagDepth == lastTagDepth):
+        if(str(noteId)in estimatedTags):
+            return estimatedTags[str(noteId)]
     
     # Get the separate subcategories within each tag of interest
     processedTagsOfInterest = []
