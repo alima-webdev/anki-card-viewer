@@ -1,25 +1,26 @@
 // Imports
+import { useRef } from "preact/hooks";
+import { useForm } from "react-hook-form";
+
 // UI
 import { Input } from "@/components/ui/input";
-import { Cog, CogIcon, Save, SaveAll, Search } from "lucide-react";
-
-// Internal
-import { ANKI } from "../globals";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useRef } from "preact/hooks";
-import { currentBaseTag, currentCategorizeMisc, currentCategorizeMiscDepth, currentQuery, paginationInfo, performSearch } from "../signals";
-
-// Devtools
-import { isDevelopment } from "../devtools";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { PopoverClose, PopoverTrigger } from "@radix-ui/react-popover";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { applyGeneratedTags } from "../api/api";
-import { Separator } from "@/components/ui/separator";
-import { FormControl, FormField, FormItem } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { FormField } from "@/components/ui/form";
+import { Cog, Search } from "lucide-react";
+
+// Internal
+import { ANKI } from "../globals";
+import Connector from "../api/api";
+import { currentBaseTag, currentCategorizeMisc, currentCategorizeMiscDepth, currentCategorizeMiscThreshold, currentQuery, paginationInfo, performSearch } from "../signals";
+
+// Devtools
+import { isDevelopment } from "../devtools";
 
 /**
  * Render the search / query component
@@ -36,6 +37,7 @@ export function SearchComponent() {
             baseTag: currentBaseTag,
             categorizeMisc: currentCategorizeMisc,
             categorizeMiscDepth: currentCategorizeMiscDepth,
+            categorizeMiscThreshold: currentCategorizeMiscThreshold,
         },
     })
 
@@ -47,7 +49,7 @@ export function SearchComponent() {
     const onSubmit = (data) => {
 
         // Perform the query
-        performSearch(data.query, parseInt(data.cardsPerPage), data.baseTag, data.categorizeMisc, parseInt(data.categorizeMiscDepth))
+        performSearch(data.query, parseInt(data.cardsPerPage), data.baseTag, data.categorizeMisc, parseInt(data.categorizeMiscDepth), parseInt(data.categorizeMiscThreshold))
 
         // Prevents reload
         event.preventDefault()
@@ -64,7 +66,7 @@ export function SearchComponent() {
     }
 
     const applyTags = (event: MouseEvent) => {
-        applyGeneratedTags()
+        Connector.applyGeneratedTags()
         event.preventDefault()
     }
     return (
@@ -125,7 +127,6 @@ export function SearchComponent() {
                                 } />
                         </div>
                         <div className="flex-shrink">
-                            {/* <Popover onOpenChange={() => { baseTagInputRef.current.value = currentBaseTag }}> */}
                             <Popover>
                                 <PopoverTrigger className="action">
                                     <a className="flex p-2 ms-1">
@@ -133,21 +134,20 @@ export function SearchComponent() {
                                     </a>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-96 mx-4 z-9999">
-                                    <form onSubmit={applySettings} className="flex flex-col gap-4">
-                                        <Label htmlFor="baseTag">Root Category Tag</Label>
-                                        <FormField
-                                            control={form.control}
-                                            name="baseTag"
-                                            render={({ field }) => (
-                                                <Input ref={baseTagInputRef} placeholder="e.g. #AK_Step2_v12..." {...field} />
-                                            )}
-                                        />
-                                        {/* <Input ref={baseTagInputRef} placeholder="e.g. #AK_Step2_v12..." value={currentBaseTag} /> */}
+                                    <form onSubmit={applySettings} className="flex flex-col gap-6">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="baseTag">Root Category Tag</Label>
+                                            <FormField
+                                                control={form.control}
+                                                name="baseTag"
+                                                render={({ field }) => (
+                                                    <Input ref={baseTagInputRef} placeholder="e.g. #AK_Step2_v12..." {...field} />
+                                                )}
+                                            />
+                                        </div>
 
-                                        {/* <Separator /> */}
-
-                                        <div className="bg-slate-50 p-4">
-                                            <div class="flex flex-row gap-2 items-center mb-4">
+                                        <div className="grid gap-1">
+                                            <div class="flex flex-row gap-2 items-center">
                                                 <FormField
                                                     control={form.control}
                                                     name="categorizeMisc"
@@ -161,38 +161,70 @@ export function SearchComponent() {
                                                     )}
                                                 />
                                             </div>
-                                            <div class="flex flex-row gap-2 items-center mb-4">
-                                                <FormField
-                                                    control={form.control}
-                                                    name="categorizeMiscDepth"
-                                                    render={({ field }) => (
-                                                        <>
-                                                            <Label htmlFor={field.name} className="flex-1">
-                                                                Analysis Depth
-                                                            </Label>
-                                                            <Input
-                                                                className="w-12 rounded-lg bg-background text-center"
-                                                                type="text"
-                                                                id={field.name}
-                                                                name={field.name}
-                                                                value={field.value}
-                                                                onChange={field.onChange}
-                                                            />
-                                                        </>
-                                                    )}
-                                                />
-                                            </div>
-                                            <div className="text-xs text-muted-foreground mb-4">
-                                                Notes will be categorized based on how well they match the subtags within the root tag.
-                                            </div>
-                                            <div className="mb-2">
-                                                <Button variant="outline" size="sm" type="button" onClick={applyTags}>
-                                                    Save Generated Tags
-                                                </Button>
-                                            </div>
-                                            <div className="text-xs text-muted-foreground">
-                                                Back up your deck before making these changes permanent.
-                                            </div>
+
+                                            <Accordion type="single" collapsible className="w-full">
+                                                <AccordionItem value="item-1" className="border-none">
+                                                    <AccordionTrigger className="text-sm no-underline">More Options</AccordionTrigger>
+                                                    <AccordionContent>
+                                                        <div className="bg-slate-50 p-4">
+                                                            <div class="flex flex-row gap-2 items-center mb-4">
+                                                                <FormField
+                                                                    control={form.control}
+                                                                    name="categorizeMiscDepth"
+                                                                    render={({ field }) => (
+                                                                        <>
+                                                                            <Label htmlFor={field.name} className="flex-1">
+                                                                                Analysis Depth
+                                                                            </Label>
+                                                                            <Input
+                                                                                className="w-16 rounded-lg bg-background text-center"
+                                                                                type="text"
+                                                                                id={field.name}
+                                                                                name={field.name}
+                                                                                value={field.value}
+                                                                                onChange={field.onChange}
+                                                                            />
+                                                                        </>
+                                                                    )}
+                                                                />
+                                                            </div>
+                                                            <div class="flex flex-row gap-2 items-center mb-4">
+                                                                <FormField
+                                                                    control={form.control}
+                                                                    name="categorizeMiscThreshold"
+                                                                    render={({ field }) => (
+                                                                        <>
+                                                                            <Label htmlFor={field.name} className="flex-1">
+                                                                                Text Similarity Threshold
+                                                                            </Label>
+                                                                            <Input
+                                                                                className="w-16 rounded-lg bg-background text-center"
+                                                                                type="text"
+                                                                                id={field.name}
+                                                                                name={field.name}
+                                                                                value={field.value}
+                                                                                onChange={field.onChange}
+                                                                            />
+                                                                        </>
+                                                                    )}
+                                                                />
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground mb-4">
+                                                                Notes will be categorized based on how well they match the subtags within the root tag.
+                                                            </div>
+                                                            <div className="mb-2">
+                                                                <Button variant="outline" size="sm" type="button" onClick={applyTags}>
+                                                                    Save Generated Tags
+                                                                </Button>
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground">
+                                                                Back up your deck before making these changes permanent.
+                                                            </div>
+                                                        </div>
+
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            </Accordion>
                                         </div>
                                         {/* <Separator /> */}
                                         <PopoverClose asChild>

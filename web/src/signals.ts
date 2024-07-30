@@ -1,7 +1,8 @@
 import { signal } from "@preact/signals"
-import { performQuery } from "./api/api"
+// import { performQuery } from "./api/api"
 import { ANKI } from "./globals"
 import { isDevelopment } from "./devtools"
+import Connector from "./api/api"
 
 // Signals to trigger refresh
 export let willRefreshCardGrid = signal(false)
@@ -13,11 +14,13 @@ export let currentCards = []
 export let paginationInfo = {
     current: 0,
     total: 1,
-    cardsPerPage: ANKI.CARDS_PER_PAGE
+    cardsPerPage: ANKI.CARDS_PER_PAGE,
+    totalCards: 0,
 }
 export let currentBaseTag = ANKI.BASE_CATEGORY_TAG
 export let currentCategorizeMisc = ANKI.CATEGORIZE_MISC
 export let currentCategorizeMiscDepth = ANKI.CATEGORIZE_MISC_DEPTH
+export let currentCategorizeMiscThreshold = ANKI.CATEGORIZE_MISC_SIMILARITY
 
 // TEST
 export let loading = signal(false)
@@ -32,7 +35,14 @@ export const refreshPagination = () => {
     willRefreshPagination.value = !willRefreshPagination.value
 }
 
-export const performSearch = async (query: string, cardsPerPage: number = paginationInfo.cardsPerPage, baseTag: string = currentBaseTag, categorizeMisc: boolean = false, categorizeMiscDepth: number = currentCategorizeMiscDepth, force: boolean = false) => {
+export const performSearch = async (
+    query: string,
+    cardsPerPage: number = paginationInfo.cardsPerPage,
+    baseTag: string = currentBaseTag,
+    categorizeMisc: boolean = false,
+    categorizeMiscDepth: number = currentCategorizeMiscDepth,
+    categorizeMiscThreshold: number = currentCategorizeMiscThreshold,
+    force: boolean = false) => {
     if(isDevelopment()) {
         console.log("PERFORM SEARCH")
         console.log(query, cardsPerPage, baseTag, categorizeMisc)
@@ -44,6 +54,7 @@ export const performSearch = async (query: string, cardsPerPage: number = pagina
         baseTag == currentBaseTag &&
         categorizeMisc == currentCategorizeMisc &&
         categorizeMiscDepth == currentCategorizeMiscDepth &&
+        categorizeMiscThreshold == currentCategorizeMiscThreshold &&
         force == false
     ) {
         return;
@@ -61,39 +72,21 @@ export const performSearch = async (query: string, cardsPerPage: number = pagina
     currentBaseTag = baseTag
     currentCategorizeMisc = categorizeMisc
     currentCategorizeMiscDepth = categorizeMiscDepth
+    currentCategorizeMiscThreshold = categorizeMiscThreshold
 
     // Get the current cards in the page
-    // performQuery(query, currentPage, cardsPerPage)
-
-    performQuery(query, currentPage, cardsPerPage, baseTag, categorizeMisc, categorizeMiscDepth)
-    return;
-    let { cards, totalPages } = await performQuery(query, currentPage, cardsPerPage, baseTag)
-
-    // Set the signal variables returned from the backend
-    currentCards = cards
-    paginationInfo.total = totalPages
-
-    if(isDevelopment()) {
-        console.log("Fn: Signals - performSearch")
-        console.log(cards, paginationInfo)
-    }
-
-    // Loading state
-    // loading.value = false
-
-    // Rerender the involved components
-    refreshCardGrid()
-    refreshPagination()
+    Connector.query(query, currentPage, cardsPerPage, baseTag, categorizeMisc, categorizeMiscDepth, categorizeMiscThreshold)
 }
 
-export const lastSearchResultsReceived = ({ cards, totalPages }) => {
+export const lastSearchResultsReceived = ({ cards, totalPages, totalCards }) => {
 
     // Set the signal variables returned from the backend
     currentCards = cards
     paginationInfo.total = totalPages
+    paginationInfo.totalCards = totalCards
 
     if(isDevelopment()) {
-        console.info("Fn: Signals - performSearch")
+        console.info("Fn: Signals - lastSearchResultsReceived")
         console.info(cards, paginationInfo)
     }
 
@@ -102,8 +95,8 @@ export const lastSearchResultsReceived = ({ cards, totalPages }) => {
     loading.value = false
 
     // Rerender the involved components
-    // refreshCardGrid()
-    // refreshPagination()
+    refreshCardGrid()
+    refreshPagination()
 }
 
 export const changePage = async (page: number) => {
@@ -119,40 +112,11 @@ export const changePage = async (page: number) => {
     let cardsPerPage = paginationInfo.cardsPerPage
     let baseTag = currentBaseTag
 
-    // performQuery(query, currentPage, cardsPerPage, baseTag)
-    // let { cards } = await performQuery(query, currentPage, cardsPerPage, baseTag)
-
-    // Set the signal variables
-    // currentCards = cards
     paginationInfo.current = currentPage
 
     if(isDevelopment()) {
         console.info("Fn: Signals - changePage")
         // console.info(paginationInfo)
     }
-    performQuery(query, currentPage, cardsPerPage, baseTag, currentCategorizeMisc, currentCategorizeMiscDepth)
-
-    // Loading state
-    // loading.value = false
-
-    // refreshCardGrid()
-    // refreshPagination()
+    Connector.query(query, currentPage, cardsPerPage, baseTag, currentCategorizeMisc, currentCategorizeMiscDepth)
 }
-
-// export const performSearch = async (query: string, page: number = 0, cardsPerPage = ANKI.CARDS_PER_PAGE) => {
-//     // Get the current cards in the page
-//     let { cards, totalPages } = await performQuery(query, page)
-    
-//     // Setup the pagination signal
-//     let currentPage = (page > totalPages ? totalPages : page)
-
-//     // Set the signal variables
-//     currentQuery = query
-//     currentCards = cards
-//     paginationInfo.current = currentPage
-//     paginationInfo.total = totalPages
-
-//     // Rerender the involved components
-//     refreshCardGrid()
-//     refreshPagination()
-// }

@@ -15,25 +15,16 @@ from .consts import HOST, PORT
 # Devtools
 from .devtools import log
 
-# try:
-#     from thefuzz import fuzz
-# except ImportError:
-#     subprocess.check_call([sys.executable, "-m", "pip", "install", 'thefuzz'])
-# finally:
-#     from thefuzz import fuzz
-
-# {
-#     "noteId": list[str]
-# }
+# Cache functions
 estimatedTags = {}
 lastTagDepth = 4
+lastThreshold = 50
 
-def estimateTagsOfInterest(tags: list[str], tagsOfInterest: list[str], noteId: int, tagDepth: int = 4):
-    
-    # print("DEPTH " + str(tagDepth))
+def estimateTagsOfInterest(tags: list[str], tagsOfInterest: list[str], noteId: int, tagDepth: int = 4, threshold: int = 50):
+    global lastTagDepth, lastThreshold
     
     # Look into the cache first if the variables are different
-    if(tagDepth == lastTagDepth):
+    if(tagDepth == lastTagDepth and threshold == lastThreshold):
         if(str(noteId)in estimatedTags):
             return estimatedTags[str(noteId)]
     
@@ -52,14 +43,10 @@ def estimateTagsOfInterest(tags: list[str], tagsOfInterest: list[str], noteId: i
     distances = []
     for tag in processedTags:
         for tagOfInterest in tagsOfInterest:
-            # distance = textdistance.hamming(tag, tagOfInterest)
-            # distanceJaro = textdistance.jaro_winkler(tag, tagOfInterest)
             distance = fuzz.ratio(tag.lower(), tagOfInterest.lower())
             distanceObj = {}
             distanceObj["tag"] = tag
             distanceObj["tagOfInterest"] = "::".join(tagOfInterest.split("::")[0:tagDepth])
-            # distanceObj["tagOfInterest"] = tagOfInterest
-            # distanceObj["distanceHamming"] = distance
             distanceObj["distance"] = distance
             distances.append(distanceObj)
 
@@ -67,13 +54,18 @@ def estimateTagsOfInterest(tags: list[str], tagsOfInterest: list[str], noteId: i
     distanceObj = max(distances, key=lambda x: x["distance"])
     # Check if it is significantly similar in %
     tagsOfInterest = ["Miscellaneous"]
-    # if(int(distanceObj["distance"]) >= 10):
-    tagsOfInterest = [distanceObj["tagOfInterest"]]
-    # print(distanceObj["distance"], tagsOfInterest)
+    
+    if(int(distanceObj["distance"]) >= threshold):
+        tagsOfInterest = [distanceObj["tagOfInterest"]]
     
     # Save the calculated tag of interest in the array
     estimatedTags[str(noteId)] = tagsOfInterest
     
+    # Update the last used options
+    lastTagDepth = tagDepth
+    lastThreshold = threshold
+    
+    # Return the result
     return tagsOfInterest
 
 def extractTagsOfInterest(tags, baseTag: str):

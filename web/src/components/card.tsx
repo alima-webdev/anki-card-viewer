@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast"
 // Internal Imports
 import { currentBaseTag, currentCards, refreshCardGrid } from "../signals"
 import { parseTag, parseCardContent } from "../api/utils"
-import { editCard, suspend, unsuspend } from "../api/api"
+import Connector from "../api/api"
 
 // Devtools
 import { isDevelopment } from "../devtools"
@@ -22,7 +22,6 @@ export function CardComponent({ cardId, noteId, cardOrder, answer, isSuspended, 
     let tagsOfInterestParsed = tagsOfInterest.map(tag => {
         return parseTag(tag)
     }).filter(Boolean)
-    console.log(tagsOfInterestParsed)
 
     // Functions
     /**
@@ -40,9 +39,9 @@ export function CardComponent({ cardId, noteId, cardOrder, answer, isSuspended, 
 
         // Call the function according to the card's current state
         if (isSuspended == true) {
-            await unsuspend(cardId)
+            await Connector.unsuspend(cardId)
         } else {
-            await suspend(cardId)
+            await Connector.suspend(cardId)
         }
 
         // Update the currentCards signal to trigger a rerender
@@ -61,7 +60,7 @@ export function CardComponent({ cardId, noteId, cardOrder, answer, isSuspended, 
         if ((event.target as HTMLElement).closest('.action')) return;
         // let cardId = parseInt((event.currentTarget as HTMLElement).getAttribute('data-id'))
         let noteId = parseInt((event.currentTarget as HTMLElement).getAttribute('data-note-id'))
-        editCard(noteId)
+        Connector.editCard(noteId)
     }
 
     // Toast

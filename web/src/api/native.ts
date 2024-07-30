@@ -1,6 +1,5 @@
 // Imports
 // Internal
-import { ANKI } from "../globals";
 import { getContent, processTags } from "./utils"
 
 // Devtools

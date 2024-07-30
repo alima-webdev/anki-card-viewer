@@ -32,20 +32,21 @@ class Backend(QObject):
     # Signals to the browser
     finishedEditing = pyqtSignal(str)
     queryFinished = pyqtSignal(str)
-    
+
     queryThread = None
 
     def __init__(self):
         super(Backend, self).__init__()
-    
+
     # Perform query
     @pyqtSlot(str, result=str)
     def query(self, options):
         global BASE_TAG
 
-        if(Backend.queryThread is not None):
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(Backend.queryThread.native_id,
-              ctypes.py_object(SystemExit))
+        if Backend.queryThread is not None:
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                Backend.queryThread.native_id, ctypes.py_object(SystemExit)
+            )
 
         returnObject = {}
 
@@ -54,11 +55,11 @@ class Backend(QObject):
             args=(
                 options,
                 returnObject,
-            )
+            ),
         )
         self.queryThread.setDaemon(True)
         self.queryThread.start()
-        
+
     # def queryFinished():
     #     log("QUERY FINISHED")
 
@@ -118,36 +119,38 @@ class Backend(QObject):
         except:
             log(f"Exception")
             return False
-    
+
     @pyqtSlot(result=bool)
     def applyGeneratedTags(self):
-        # print(cache["query"]["results"])
         # Get the notes for update
-        cards = list(filter(lambda card: card["tagsOfInterestEstimated"] == True, cache["query"]["results"]["cards"]))
+        cards = list(
+            filter(
+                lambda card: card["tagsOfInterestEstimated"] == True,
+                cache["query"]["results"]["cards"],
+            )
+        )
         notes = []
         lastNoteId = None
         for card in cards:
             # New note
-            if(card["noteId"] != lastNoteId):
+            if card["noteId"] != lastNoteId:
                 # notes.append(card)
                 note = mw.col.get_note(card["noteId"])
-                if(note is not None):
+                if note is not None:
                     note.add_tag(card["tagsOfInterest"][0])
                     note.flush()
                 lastNoteId = card["noteId"]
-        
+
         return True
 
     # When the user performs a query, changes page, etc.
     def queryFunction(self, options, returnObject):
         global BASE_TAG
-        
+
         try:
 
             # Options
             options = json.loads(options)
-            
-            # print(options)
 
             # Make sure all the required information has been given
             if (
@@ -157,6 +160,7 @@ class Backend(QObject):
                 or options["baseTag"] == None
                 or options["categorizeMisc"] == None
                 or options["categorizeMiscDepth"] == None
+                or options["categorizeMiscThreshold"] == None
             ):
                 return json.dumps({})
 
@@ -194,28 +198,25 @@ class Backend(QObject):
                 tagsOfInterest.extend(card["tagsOfInterest"])
 
                 return card
+
             cards = list(map(prepareNote, ids))
 
             tagsOfInterest = list(set(tagsOfInterest))
 
-            # miscCardsCount = 0
-
             def processMiscCards(card):
-                # nonlocal miscCardsCount
-                # TEST
-                # if miscCardsCount > 100:
-                #     return card
                 if len(card["tagsOfInterest"]) == 0:
                     card["tagsOfInterest"] = estimateTagsOfInterest(
-                        card["tags"], tagsOfInterest, card["noteId"], int(options["categorizeMiscDepth"])
+                        card["tags"],
+                        tagsOfInterest,
+                        card["noteId"],
+                        int(options["categorizeMiscDepth"]),
+                        int(options["categorizeMiscThreshold"]),
                     )
                     card["tagsOfInterestEstimated"] = True
-                    # print(estimateTagsOfInterest(card["tags"], tagsOfInterest))
-                    # miscCardsCount += 1
 
                 return card
 
-            if(options["categorizeMisc"] == True):
+            if options["categorizeMisc"] == True:
                 cards = list(map(processMiscCards, cards))
 
             # Order by tags of interest
@@ -225,7 +226,13 @@ class Backend(QObject):
                 if len(card["tagsOfInterest"]) > 0:
                     field = card["tagsOfInterest"][0]
                     isNone = False
-                return (isNone, field, card["tagsOfInterestEstimated"], card["noteId"], card["cardOrder"])
+                return (
+                    isNone,
+                    field,
+                    card["tagsOfInterestEstimated"],
+                    card["noteId"],
+                    card["cardOrder"],
+                )
 
             cards = sorted(cards, key=sortByTagsOfInterest)
 
@@ -244,11 +251,13 @@ class Backend(QObject):
                     mw.col.get_note(card["noteId"]).fields[0], card["cardOrder"]
                 )
                 return card
+
             cards = list(map(getCardAnswer, cards))
 
             # Create the return object
             returnObject["cards"] = cards
             returnObject["totalPages"] = math.ceil(len(ids) / cardsPerPage)
+            returnObject["totalCards"] = len(ids)
 
             # Cache the query
             cache["query"]["request"] = options
@@ -256,5 +265,5 @@ class Backend(QObject):
 
             # Emit the signal
             self.queryFinished.emit(json.dumps(returnObject))
-        finally: 
+        finally:
             print("THREAD DONE")

@@ -12,6 +12,7 @@ import {
 import { EllipsisIcon } from "lucide-react"
 import { changePage, loading, paginationInfo, willRefreshPagination } from "../signals"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 
 /**
  * Render the pagination component
@@ -43,18 +44,9 @@ export function PaginationComponent() {
     return (
         <>
             {(loading.value == true ? (
-                <PaginationElement>
-                    <PaginationContent>
-
-                        {/* Current */}
-                        <PaginationItem>
-                            <PaginationLink>
-                                <EllipsisIcon></EllipsisIcon>
-                            </PaginationLink>
-                        </PaginationItem>
-
-                    </PaginationContent>
-                </PaginationElement>
+                <>
+                    <Skeleton className="w-[200px] h-[50px] rounded-xl mx-auto" />
+                </>
             ) : (
                 <PaginationElement>
                     <PaginationContent>

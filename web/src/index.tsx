@@ -1,8 +1,7 @@
 // Imports
 // Preact
 import { render } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
-import { Suspense } from 'preact/compat';
+import { useEffect } from 'preact/hooks';
 
 // Styles
 import './styles/styles.css';
@@ -12,13 +11,12 @@ import { Toaster } from "@/components/ui/toaster"
 
 // Components
 import { PaginationComponent } from "./components/pagination"
-import { CardGridComponent } from "./components/cardgrid"
+import { CardGridComponent } from "./components/grid"
 import { SearchComponent } from "./components/search"
 
 // Internal
 import { ANKI } from './globals';
-import { performSearch } from './signals';
-import { initAPI } from './api/api';
+import Connector from './api/api';
 
 // Devtools
 import { isDevelopment, log } from './devtools';
@@ -30,13 +28,11 @@ import { isDevelopment, log } from './devtools';
  */
 export function App() {
 
-    // const [loading, setLoading] = useState(true)
-
     // Init the signals and start the API
     useEffect(() => {
         const performEffect = async () => {
-            await initAPI()
-            performSearch(ANKI.DEFAULT_SEARCH_QUERY, ANKI.CARDS_PER_PAGE, ANKI.BASE_CATEGORY_TAG, ANKI.CATEGORIZE_MISC, ANKI.CATEGORIZE_MISC_DEPTH, true)
+            await Connector.init()
+            Connector.query(ANKI.DEFAULT_SEARCH_QUERY, 0, ANKI.CARDS_PER_PAGE, ANKI.BASE_CATEGORY_TAG, ANKI.CATEGORIZE_MISC, ANKI.CATEGORIZE_MISC_DEPTH, true)
         }
         performEffect()
     }, [])
@@ -45,7 +41,6 @@ export function App() {
         <main className="dark:dark">
             <SearchComponent />
             <div className="p-4 grid grid-rows gap-4">
-                <PaginationComponent />
                 <CardGridComponent />
                 <PaginationComponent />
             </div>

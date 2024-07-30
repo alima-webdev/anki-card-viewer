@@ -10,9 +10,9 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Internal
-import { suspend, unsuspend, editCard } from '../api/api';
+// import { suspend, unsuspend, editCard } from '../api/api';
 import { parseCardContent, parseTag } from '../api/utils';
-import { currentBaseTag, currentCards, loading, refreshCardGrid, willRefreshCardGrid } from '../signals';
+import { currentBaseTag, currentCards, loading, paginationInfo, refreshCardGrid, willRefreshCardGrid } from '../signals';
 
 // Devtools
 import { isDevelopment, log } from '../devtools';
@@ -21,6 +21,7 @@ import { ToastAction, ToastClose } from '@/components/ui/toast';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CardComponent } from './card';
+import { PaginationComponent } from './pagination';
 
 /**
  * Render the card grid component
@@ -37,45 +38,6 @@ export function CardGridComponent() {
 
     // Card information from signal
     let cards = [...currentCards]
-
-    /**
-     * Toggle the suspend state of the card when the user hits the switch button
-     *
-     * @param {switchElementId} string - Id of the element being pressed
-     */
-    const suspendedCheckChanged = async (switchElementId) => {
-        // Get the element
-        const switchElement = document.getElementById(switchElementId) as HTMLElement
-
-        // Get the card information
-        let cardId = parseInt(switchElement.getAttribute('data-id'))
-        let isSuspended = (switchElement.getAttribute('data-suspended') == "true" ? true : false)
-
-        // Call the function according to the card's current state
-        if (isSuspended == true) {
-            await unsuspend(cardId)
-        } else {
-            await suspend(cardId)
-        }
-
-        // Update the currentCards signal to trigger a rerender
-        const arrayIndex = currentCards.findIndex(card => { return card.cardId == cardId })
-
-        // Set the signal variables
-        currentCards[arrayIndex].isSuspended = !isSuspended
-
-        // Refresh the card grid
-        refreshCardGrid()
-    }
-
-    // Card click event
-    let cardClickEvent = (event: MouseEvent) => {
-        // Do nothing if clicked on elements that already have onclick setup
-        if ((event.target as HTMLElement).closest('.action')) return;
-        // let cardId = parseInt((event.currentTarget as HTMLElement).getAttribute('data-id'))
-        let noteId = parseInt((event.currentTarget as HTMLElement).getAttribute('data-note-id'))
-        editCard(noteId)
-    }
 
     // Toast
     const { toast } = useToast()
@@ -113,26 +75,38 @@ export function CardGridComponent() {
     return (
         <>
             {(loading.value == true ? (
-                <div className="grid grid-cols-3 gap-4">
-                    <Skeleton className="h-[200px] rounded-xl" />
-                    <Skeleton className="h-[200px] rounded-xl" />
-                    <Skeleton className="h-[200px] rounded-xl" />
+                <>
+                    <Skeleton className="w-[100px] h-[20px] rounded-xl" />
+                    <div className="flex flex-row">
+                        <div className="flex-1">
+                            <Skeleton className="w-[200px] h-[40px] rounded-xl" />
+                        </div>
+                        <Skeleton className="w-[400px] h-[40px] rounded-xl items-end justify-self-end" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <Skeleton className="h-[200px] rounded-xl" />
+                        <Skeleton className="h-[200px] rounded-xl" />
+                        <Skeleton className="h-[200px] rounded-xl" />
 
-                    <Skeleton className="h-[200px] rounded-xl" />
-                    <Skeleton className="h-[200px] rounded-xl" />
-                    <Skeleton className="h-[200px] rounded-xl" />
+                        <Skeleton className="h-[200px] rounded-xl" />
+                        <Skeleton className="h-[200px] rounded-xl" />
+                        <Skeleton className="h-[200px] rounded-xl" />
 
-                    <Skeleton className="h-[200px] rounded-xl" />
-                    <Skeleton className="h-[200px] rounded-xl" />
-                    <Skeleton className="h-[200px] rounded-xl" />
+                        <Skeleton className="h-[200px] rounded-xl" />
+                        <Skeleton className="h-[200px] rounded-xl" />
+                        <Skeleton className="h-[200px] rounded-xl" />
 
-                    <Skeleton className="h-[125px] rounded-xl" />
-                    <Skeleton className="h-[125px] rounded-xl" />
-                    <Skeleton className="h-[125px] rounded-xl" />
-                </div>
+                        <Skeleton className="h-[125px] rounded-xl" />
+                        <Skeleton className="h-[125px] rounded-xl" />
+                        <Skeleton className="h-[125px] rounded-xl" />
+                    </div>
+                </>
             ) : (
                 <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
-                    {(cards.length > 0 ? cards.map(({ cardId, noteId, cardOrder, answer, isSuspended, tags, tagsOfInterestEstimated, tagsOfInterest = [] }) => {
+                    <div className="md:col-span-3 lg:col-span-4 xl:col-span-4 text-sm text-muted-foreground">
+                        Total {paginationInfo.totalCards} results
+                    </div>
+                    {(cards.length > 0 ? cards.map(({ cardId, noteId, cardOrder, answer, isSuspended, tags, tagsOfInterestEstimated, tagsOfInterest = [] }, index) => {
 
                         // Card category
                         let category = ""
@@ -143,7 +117,6 @@ export function CardGridComponent() {
                             tagsOfInterestParsed = tagsOfInterest.map(tag => {
                                 return parseTag(tag)
                             })
-                            console.log(tagsOfInterest, currentBaseTag)
                             category = tagsOfInterest[0].replace(currentBaseTag, "").split("::").filter(Boolean)[0].replace("_", " ")
                         }
 
@@ -158,10 +131,16 @@ export function CardGridComponent() {
                             <>
                                 {/* Category Header */}
                                 {(insertCategoryHeader ?
-                                    <div className="md:col-span-3 lg:col-span-4 xl:col-span-4">
-                                        <h1 className="mt-3 text-2xl font-semibold tracking-tight">
+                                    <div className="md:col-span-3 lg:col-span-4 xl:col-span-4 flex flex-row">
+                                        <h1 className={`my-1 text-3xl font-semibold tracking-tight flex-1 
+                                        ${(index > 0 ? "mt-8" : "")}`}>
                                             {currentCategory}
                                         </h1>
+                                        {(index == 0 ?
+                                            <div className="flex-shrink">
+                                                <PaginationComponent />
+                                            </div>
+                                            : "")}
                                     </div>
                                     : "")}
 

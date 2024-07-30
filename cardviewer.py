@@ -134,7 +134,7 @@ class CardViewerDialog(QDialog):
     def resizeWebView(self):
         self.webview.resize(self.size())
     
-    def closeEvent(self, a0: QCloseEvent | None) -> None:
+    def closeEvent(self, event) -> None:
         
         print("CLOSE")
         
@@ -144,4 +144,4 @@ class CardViewerDialog(QDialog):
         print("CLOSE THREAD")
         
         
-        return super().closeEvent(a0)
+        return super().closeEvent(event)
