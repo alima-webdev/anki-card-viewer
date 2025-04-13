@@ -15,7 +15,7 @@ def init():
     # Add action to Anki's tools menu
     action = QAction("Open the Card Viewer", mw)
     action.triggered.connect(openDialog)
-    action.setShortcut("V")
+    action.setShortcut("Ctrl+V")
     mw.form.menuTools.addAction(action)
     
     # Open the dialog automatically if developing

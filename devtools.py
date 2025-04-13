@@ -16,5 +16,4 @@ def log(object):
         print(f"{bcolors.HEADER}{object}{bcolors.ENDC}")
         
 def isDevelopment():
-    # return os.environ.get("DEVELOPMENT", "0") == "1"
-    return True
+    return os.environ.get("DEVELOPMENT", "0") == "1"
