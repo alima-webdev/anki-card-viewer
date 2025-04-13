@@ -20,7 +20,7 @@ for id in ids:
     
     for tag in note.tags:
         if(tag.startswith(baseTag)):
-            customTag = tag.replace(baseTag, "ROTATIONS::IM::")
+            customTag = tag.replace(baseTag, "#AK_Step2_v12::#OME")
             note.add_tag(customTag)
             note.flush()
 
