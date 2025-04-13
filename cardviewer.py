@@ -7,8 +7,15 @@ from aqt.qt import (
     QUrl,
     QWebEngineView,
     pyqtSignal,
+<<<<<<< HEAD
     QApplication
 )
+=======
+    QApplication,
+    QWebEngineScript
+)
+from aqt.theme import theme_manager
+>>>>>>> f7dfa4d (Stable)
 from aqt import QCloseEvent, QKeyEvent, QSettings, QSplitter, QWebChannel, QWebEnginePage, QWebEngineSettings, QWidget, mw, gui_hooks
 
 from aqt.browser.previewer import BrowserPreviewer as PreviewDialog
@@ -55,7 +62,11 @@ class CardViewerDialog(QDialog):
         self.channel.registerObject("backend", self.backend)
 
         # Navigate
+<<<<<<< HEAD
         # self.navigate("web/dist/index.html")
+=======
+        self.navigate("web/dist/index.html")
+>>>>>>> f7dfa4d (Stable)
 
         # Editor
         self.editorWidget = QWidget()
@@ -116,15 +127,42 @@ class CardViewerDialog(QDialog):
         self.show()
         self.exec()
         self.navigate("web/dist/index.html")
+<<<<<<< HEAD
+=======
+        # self.webview.page().runJavaScript("alert(123)")
+        self.enableDarkMode()
+
+    def enableDarkMode(self):
+        # script = QWebEngineScript()
+        # script.setName("force-dark-scheme")
+        # # script.setInjectionPoint(QWebEngineScript.DocumentStart)
+        # # script.setWorldId(QWebEngineScript.MainWorld)
+        # script.setRunsOnSubFrames(True)
+        # script.setSourceCode("""
+        #     window.isDarkMode = true
+        # """)
+
+        self.webview.page().runJavaScript("")
+>>>>>>> f7dfa4d (Stable)
 
     # Navigate to the game interface URL
     def navigate(self, path):
         url = f"""http://{HOST}:{PORT}/_addons/{ADDON_NAME}/{path}"""
         if isDevelopment():
             url = "http://localhost:5173/index.html"
+<<<<<<< HEAD
 
         self.webview.load(QUrl(url))
 
+=======
+        
+        if(theme_manager.night_mode == True):
+            script = QWebEngineScript()
+            script.setSourceCode('document.body.classList.add("dark")')
+            self.webview.page().profile().scripts().insert(script)
+
+        self.webview.load(QUrl(url))
+>>>>>>> f7dfa4d (Stable)
         self.webview.page().setWebChannel(self.channel)
         settings = self.webview.page().profile().settings()
         settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, True)

@@ -15,6 +15,10 @@ import Connector from "../api/api"
 
 // Devtools
 import { isDevelopment } from "../devtools"
+<<<<<<< HEAD
+=======
+import { useEffect, useRef } from "preact/hooks"
+>>>>>>> f7dfa4d (Stable)
 
 export function CardComponent({ cardId, noteId, cardOrder, answer, isSuspended, tags, tagsOfInterestEstimated, tagsOfInterest = [] }) {
 
@@ -67,7 +71,12 @@ export function CardComponent({ cardId, noteId, cardOrder, answer, isSuspended, 
     const { toast } = useToast()
     const showToast = () => {
         toast({
+<<<<<<< HEAD
             title: (
+=======
+            title: "Tag Copied to Clipboard",
+            description: (
+>>>>>>> f7dfa4d (Stable)
                 <div className="flex flex-row gap-4">
                     <Check />
                     Tag Copied to Clipboard
@@ -82,8 +91,22 @@ export function CardComponent({ cardId, noteId, cardOrder, answer, isSuspended, 
         showToast()
     }
 
+<<<<<<< HEAD
     return (
         <Card className={(isSuspended ? "suspended" : "") + " flex flex-col cursor-pointer"} data-id={cardId} data-note-id={noteId} data-suspended={isSuspended} onClick={cardClickEvent} >
+=======
+    // Card content
+    const contentRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+
+        // contentRef.current.textContent = parseCardContent(answer)
+        contentRef.current.innerHTML = parseCardContent(answer)
+    }, [])
+
+    return (
+        <Card className={(isSuspended ? "suspended" : "unsuspended") + " flex flex-col cursor-pointer"} data-id={cardId} data-note-id={noteId} data-suspended={isSuspended} onClick={cardClickEvent} >
+>>>>>>> f7dfa4d (Stable)
             <CardHeader>
                 {/* {(isDevelopment() ?
                     <small className="text-muted-foreground">
@@ -118,7 +141,11 @@ export function CardComponent({ cardId, noteId, cardOrder, answer, isSuspended, 
                                 <TagsIcon className="h-4 w-4 text-muted-foreground"></TagsIcon>
                             </a>
                         </PopoverTrigger>
+<<<<<<< HEAD
                         <PopoverContent className="w-4/5">
+=======
+                        <PopoverContent className="w-4/5 dark:bg-neutral-900 dark:border-neutral-800">
+>>>>>>> f7dfa4d (Stable)
                             {/* Tags of Interest */}
                             {(tagsOfInterest.length > 0 ? (
                                 <>
@@ -149,7 +176,12 @@ export function CardComponent({ cardId, noteId, cardOrder, answer, isSuspended, 
             </CardHeader>
             {/* Content */}
             <CardContent>
+<<<<<<< HEAD
                 <div dangerouslySetInnerHTML={{ __html: parseCardContent(answer) }}></div>
+=======
+                <div ref={contentRef}></div>
+                {/* <div dangerouslySetInnerHTML={{ __html: parseCardContent(answer) }}></div> */}
+>>>>>>> f7dfa4d (Stable)
             </CardContent>
             {/* Footer (suspension status switch) */}
             <CardFooter className="flex flex-1 flex-col items-start justify-end">
