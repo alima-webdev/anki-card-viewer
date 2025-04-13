@@ -73,12 +73,8 @@ export function parseTag(tag: string, stripBaseTag = true) {
  * @returns {string}
  */
 export function parseCardContent(content: string) {
-<<<<<<< HEAD
-    // return content.replaceAll(/<img.*?src="([^"]*)"[^>]*>(?:<\/img>)?/gmi, )
-=======
     // return content.replaceAll(/<img.*?src="([^"]*)"[^>]*>(?:<\/img>)?/gmi, "IMG")
     // return content.replace(/\<|\>/gmi, "")
->>>>>>> f7dfa4d (Stable)
     return content
 }
 

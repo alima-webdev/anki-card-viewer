@@ -23,15 +23,9 @@
 		},
 		"baseUrl": ".",
 	},
-<<<<<<< HEAD
-	"files": [
-		"src/types/**.d.ts"
-	],
-=======
 	// "files": [
 	// 	"src/types/**.d.ts"
 	// ],
->>>>>>> f7dfa4d (Stable)
 	"include": [
 		"node_modules/vite/client.d.ts",
 		"**/*"

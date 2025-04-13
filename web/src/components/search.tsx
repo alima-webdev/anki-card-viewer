@@ -133,11 +133,7 @@ export function SearchComponent() {
                                         <Cog className="h-4 w-4 text-muted-foreground"></Cog>
                                     </a>
                                 </PopoverTrigger>
-<<<<<<< HEAD
-                                <PopoverContent className="w-96 mx-4 z-9999">
-=======
                                 <PopoverContent className="w-96 mx-4 z-9999 dark:dark">
->>>>>>> f7dfa4d (Stable)
                                     <form onSubmit={applySettings} className="flex flex-col gap-6">
                                         <div className="grid gap-2">
                                             <Label htmlFor="baseTag">Root Category Tag</Label>
@@ -150,11 +146,7 @@ export function SearchComponent() {
                                             />
                                         </div>
 
-<<<<<<< HEAD
-                                        <div className="grid gap-1">
-=======
                                         {/* <div className="grid gap-1">
->>>>>>> f7dfa4d (Stable)
                                             <div class="flex flex-row gap-2 items-center">
                                                 <FormField
                                                     control={form.control}
@@ -233,11 +225,7 @@ export function SearchComponent() {
                                                     </AccordionContent>
                                                 </AccordionItem>
                                             </Accordion>
-<<<<<<< HEAD
-                                        </div>
-=======
                                         </div> */}
->>>>>>> f7dfa4d (Stable)
                                         {/* <Separator /> */}
                                         <PopoverClose asChild>
                                             <Button type="submit" className="w-32">Apply Settings</Button>

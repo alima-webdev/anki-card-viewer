@@ -4,11 +4,7 @@ import re
 import subprocess
 import sys
 # import textdistance
-<<<<<<< HEAD
 from thefuzz import fuzz
-=======
-# from thefuzz import fuzz
->>>>>>> f7dfa4d (Stable)
 
 # Anki
 from aqt import mw
@@ -24,7 +20,6 @@ estimatedTags = {}
 lastTagDepth = 4
 lastThreshold = 50
 
-<<<<<<< HEAD
 def estimateTagsOfInterest(tags: list[str], tagsOfInterest: list[str], noteId: int, tagDepth: int = 4, threshold: int = 50):
     global lastTagDepth, lastThreshold
     
@@ -77,60 +72,6 @@ def extractTagsOfInterest(tags, baseTag: str):
     if(not baseTag.endswith("::")):
         baseTag = baseTag + "::"
     return list(filter(lambda x: x.startswith(baseTag), tags))
-=======
-# def estimateTagsOfInterest(tags: list[str], tagsOfInterest: list[str], noteId: int, tagDepth: int = 4, threshold: int = 50):
-#     global lastTagDepth, lastThreshold
-    
-#     # Look into the cache first if the variables are different
-#     if(tagDepth == lastTagDepth and threshold == lastThreshold):
-#         if(str(noteId)in estimatedTags):
-#             return estimatedTags[str(noteId)]
-    
-#     # Get the separate subcategories within each tag of interest
-#     processedTagsOfInterest = []
-#     for tagOfInterest in tagsOfInterest:
-#         processedTagsOfInterest = processedTagsOfInterest + tagOfInterest.split("::")
-    
-#     # Get the separate subcategories within each tag
-#     processedTags: list[str] = []
-#     for tag in tags:
-#         if(tag.startswith("#AK_Step2_v12")):
-#             processedTags = processedTags + tag.split("::")
-
-#     # Calculate the distance of each subcategory
-#     distances = []
-#     for tag in processedTags:
-#         for tagOfInterest in tagsOfInterest:
-#             distance = fuzz.ratio(tag.lower(), tagOfInterest.lower())
-#             distanceObj = {}
-#             distanceObj["tag"] = tag
-#             distanceObj["tagOfInterest"] = "::".join(tagOfInterest.split("::")[0:tagDepth])
-#             distanceObj["distance"] = distance
-#             distances.append(distanceObj)
-
-#     # Return the closest tag of interest
-#     distanceObj = max(distances, key=lambda x: x["distance"])
-#     # Check if it is significantly similar in %
-#     tagsOfInterest = ["Miscellaneous"]
-    
-#     if(int(distanceObj["distance"]) >= threshold):
-#         tagsOfInterest = [distanceObj["tagOfInterest"]]
-    
-#     # Save the calculated tag of interest in the array
-#     estimatedTags[str(noteId)] = tagsOfInterest
-    
-#     # Update the last used options
-#     lastTagDepth = tagDepth
-#     lastThreshold = threshold
-    
-#     # Return the result
-#     return tagsOfInterest
-
-# def extractTagsOfInterest(tags, baseTag: str):
-#     if(not baseTag.endswith("::")):
-#         baseTag = baseTag + "::"
-#     return list(filter(lambda x: x.startswith(baseTag), tags))
->>>>>>> f7dfa4d (Stable)
 
 
 def getNotesInfo(ids, baseTag):
@@ -165,10 +106,6 @@ def processHTML(html: str, cardOrder: int = None):
 
     # Image
     imgRegex = '"([^"]*?).?(jpg|png|svg|jpeg|webp)"'
-<<<<<<< HEAD
-    output = re.sub(imgRegex, f"http://{HOST}:{str(PORT)}" + r"""/\1.\2""", output)
-=======
     output = re.sub(imgRegex, f"\"http://{HOST}:{str(PORT)}" + r"""/\1.\2\"""", output)
->>>>>>> f7dfa4d (Stable)
 
     return output

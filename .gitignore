@@ -132,12 +132,4 @@ package-lock.json
 # CUSTOM
 /__pycache__/
 .DS_Store
-<<<<<<< HEAD
 backup
-=======
-backup
-.vscode/
-
-# Temporary
-vendors/
->>>>>>> f7dfa4d (Stable)
