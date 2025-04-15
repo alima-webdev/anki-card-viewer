@@ -46,8 +46,3 @@ Anki Card Viewer is a custom Anki add-on that enhances the way users interact wi
 ## 📫 Feedback & Contributions
 
 Feedback, issues, and contributions are welcome! Feel free to open an [issue](#) or submit a pull request.
-
----
-
-© 2025 Alex Lima  
-Not affiliated with or endorsed by Anki.
