@@ -1,27 +1,20 @@
-// Imports
-// UI
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Button } from '@/components/ui/button';
-import { Check, Sparkles, TagsIcon } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+// Dependencies
+// Shadcn UI
+import { Check } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/components/ui/use-toast';
 
 // Internal
-// import { suspend, unsuspend, editCard } from '../api/api';
-import { parseCardContent, parseTag } from '../api/utils';
-import { currentBaseTag, currentCards, loading, paginationInfo, refreshCardGrid, willRefreshCardGrid } from '../signals';
+// -- Functions
+import { parseTag } from '../api/utils';
+import { currentBaseTag, currentCards, loading, paginationInfo, willRefreshCardGrid } from '../signals';
+
+// -- Components
+import { CardComponent } from './card';
+import { PaginationComponent } from './pagination';
 
 // Devtools
 import { isDevelopment, log } from '../devtools';
-import { useToast } from '@/components/ui/use-toast';
-import { ToastAction, ToastClose } from '@/components/ui/toast';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { CardComponent } from './card';
-import { PaginationComponent } from './pagination';
 
 /**
  * Render the card grid component
@@ -36,6 +29,8 @@ export function CardGridComponent() {
     // Use the signal to refresh the component
     const refresh = willRefreshCardGrid.value
 
+    const isLoading = loading.value
+
     // Card information from signal
     let cards = [...currentCards]
 
@@ -44,7 +39,8 @@ export function CardGridComponent() {
     const showToast = () => {
         console.log("showToast")
         toast({
-            title: (
+            title: "Tag Copied to Clipboard",
+            description: (
                 <div className="flex flex-row gap-4">
                     <Check />
                     Tag Copied to Clipboard
@@ -74,7 +70,7 @@ export function CardGridComponent() {
 
     return (
         <>
-            {(loading.value == true ? (
+            {(isLoading == true ? (
                 <>
                     <Skeleton className="w-[100px] h-[20px] rounded-xl" />
                     <div className="flex flex-row">

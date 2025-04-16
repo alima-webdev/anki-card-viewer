@@ -22,9 +22,8 @@ export let currentCategorizeMisc = ANKI.CATEGORIZE_MISC
 export let currentCategorizeMiscDepth = ANKI.CATEGORIZE_MISC_DEPTH
 export let currentCategorizeMiscThreshold = ANKI.CATEGORIZE_MISC_SIMILARITY
 
-// TEST
-export let loading = signal(false)
-// END - TEST
+// Loading state
+export let loading = signal(true)
 
 // Actions
 export const refreshCardGrid = () => {
@@ -49,16 +48,16 @@ export const performSearch = async (
     }
 
     // Prevent query execution if it is the same as the current query, currentPage, and cardsPerPage
-    if(query == currentQuery &&
-        cardsPerPage == paginationInfo.cardsPerPage &&
-        baseTag == currentBaseTag &&
-        categorizeMisc == currentCategorizeMisc &&
-        categorizeMiscDepth == currentCategorizeMiscDepth &&
-        categorizeMiscThreshold == currentCategorizeMiscThreshold &&
-        force == false
-    ) {
-        return;
-    }
+    // if(query == currentQuery &&
+    //     cardsPerPage == paginationInfo.cardsPerPage &&
+    //     baseTag == currentBaseTag &&
+    //     categorizeMisc == currentCategorizeMisc &&
+    //     categorizeMiscDepth == currentCategorizeMiscDepth &&
+    //     categorizeMiscThreshold == currentCategorizeMiscThreshold &&
+    //     force == false
+    // ) {
+    //     return;
+    // }
 
     // Loading state
     loading.value = true

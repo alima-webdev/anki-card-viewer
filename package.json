@@ -8,7 +8,8 @@
     "git-push": "git add ./ && git commit -m 'Release' && git push origin main",
     "release-prep": "npm run build-web && npm run git-push",
     "release": "npm run release-prep && release-it",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "DEVELOPMENT=1 /Applications/Anki.app/Contents/MacOS/Anki"
   },
   "author": "",
   "license": "ISC",

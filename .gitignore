@@ -133,3 +133,6 @@ package-lock.json
 /__pycache__/
 .DS_Store
 backup
+.vscode/
+__pycache__/
+pnpm-lock.yaml

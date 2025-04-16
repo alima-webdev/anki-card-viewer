@@ -4,7 +4,7 @@ import { getContent, processTags } from "./utils"
 
 // Devtools
 import { isDevelopment, log } from "../devtools"
-import { currentBaseTag, currentCards, currentCategorizeMisc, currentCategorizeMiscDepth, currentCategorizeMiscThreshold, currentQuery, lastSearchResultsReceived, paginationInfo, refreshCardGrid } from "../signals";
+import { currentBaseTag, currentCards, currentCategorizeMisc, currentCategorizeMiscDepth, currentCategorizeMiscThreshold, currentQuery, lastSearchResultsReceived, loading, paginationInfo, refreshCardGrid } from "../signals";
 
 class NativeConnector {
     /**
@@ -55,9 +55,11 @@ class NativeConnector {
 
                 // Query results returned
                 // channel.objects.backend.queryFinished.connect(this.queryResults)
-                console.log(channel.objects.backend)
+                // console.log(channel.objects.backend)
                 channel.objects.backend.queryFinished.connect((response) => {
                     lastSearchResultsReceived(JSON.parse(response))
+                    // alert("RES")
+                    loading.value = false
                 });
                 this.ready = true
                 console.warn("READY")

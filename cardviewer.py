@@ -8,7 +8,8 @@ from aqt.qt import (
     QWebEngineView,
     pyqtSignal,
     QApplication,
-    QWebEngineScript
+    QWebEngineScript,
+    QMessageBox,
 )
 from aqt.theme import theme_manager
 from aqt import QCloseEvent, QKeyEvent, QSettings, QSplitter, QWebChannel, QWebEnginePage, QWebEngineSettings, QWidget, mw, gui_hooks
@@ -118,21 +119,7 @@ class CardViewerDialog(QDialog):
         self.show()
         self.exec()
         self.navigate("web/dist/index.html")
-        # self.webview.page().runJavaScript("alert(123)")
-        self.enableDarkMode()
-
-    def enableDarkMode(self):
-        # script = QWebEngineScript()
-        # script.setName("force-dark-scheme")
-        # # script.setInjectionPoint(QWebEngineScript.DocumentStart)
-        # # script.setWorldId(QWebEngineScript.MainWorld)
-        # script.setRunsOnSubFrames(True)
-        # script.setSourceCode("""
-        #     window.isDarkMode = true
-        # """)
-
-        self.webview.page().runJavaScript("")
-
+    
     # Navigate to the game interface URL
     def navigate(self, path):
         url = f"""http://{HOST}:{PORT}/_addons/{ADDON_NAME}/{path}"""

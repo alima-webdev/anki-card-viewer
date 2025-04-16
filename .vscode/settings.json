@@ -1,8 +1,0 @@
-{
-    "python.autoComplete.extraPaths": [
-        "/Users/alexlima-nsu/Downloads/anki-source/anki/qt/"
-    ],
-    "python.analysis.extraPaths": [
-        "/Users/alexlima-nsu/Downloads/anki-source/anki/qt/"
-    ]
-}
