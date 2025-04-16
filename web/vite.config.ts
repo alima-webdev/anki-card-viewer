@@ -8,9 +8,9 @@ export default defineConfig({
 	base: '',
 	plugins: [
 		preact(),
-		Terminal({
-             console: 'terminal'
-        })
+		// Terminal({
+        //      console: 'terminal'
+        // })
 	],
 	resolve: {
 		alias: [{

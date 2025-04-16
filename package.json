@@ -9,7 +9,8 @@
     "release-prep": "npm run build-web && npm run git-push",
     "release": "npm run release-prep && release-it",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "DEVELOPMENT=1 /Applications/Anki.app/Contents/MacOS/Anki"
+    "dev": "python3 runanki.py -b -workspaceRoot ./ -b ../../anki-base/",
+    "prod": "/Applications/Anki.app/Contents/MacOS/Anki -b ../../anki-base/"
   },
   "author": "",
   "license": "ISC",
