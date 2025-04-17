@@ -137,3 +137,4 @@ backup
 __pycache__/
 pnpm-lock.yaml
 test.py
+vendors/
