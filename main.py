@@ -31,6 +31,8 @@ def openDialog():
 
 def editNote(noteId):
     cardViewerDialog.editNote(noteId)
+def closeEditPanel():
+    cardViewerDialog.closeEditPanel()
     
 def exit():
     cardViewerDialog.webview.deleteLater()

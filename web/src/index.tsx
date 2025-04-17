@@ -29,12 +29,22 @@ import { isDevelopment, log } from './devtools';
 export function App() {
 
     // Init the signals and start the API
+    const keyDownHandler = (event: KeyboardEvent) => {
+        switch(event.key) {
+            case "Escape":
+                Connector.closeEditPanel()
+                break;
+        }
+    }
     useEffect(() => {
         const performEffect = async () => {
             await Connector.init()
             Connector.query(ANKI.DEFAULT_SEARCH_QUERY, 0, ANKI.CARDS_PER_PAGE, ANKI.BASE_CATEGORY_TAG, ANKI.CATEGORIZE_MISC, ANKI.CATEGORIZE_MISC_DEPTH, true)
         }
         performEffect()
+
+        // Keyboard shortcuts
+        document.body.addEventListener("keydown", keyDownHandler)
     }, [])
 
     return (

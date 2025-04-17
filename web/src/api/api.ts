@@ -54,16 +54,13 @@ class NativeConnector {
                 });
 
                 // Query results returned
-                // channel.objects.backend.queryFinished.connect(this.queryResults)
-                // console.log(channel.objects.backend)
                 channel.objects.backend.queryFinished.connect((response) => {
-                    lastSearchResultsReceived(JSON.parse(response))
                     // alert("RES")
+                    console.warn(JSON.parse(response))
+                    lastSearchResultsReceived(JSON.parse(response))
                     loading.value = false
                 });
                 this.ready = true
-                console.warn("READY")
-                console.log(this.nativeBackend)
                 resolve(channel)
             })
         });
@@ -132,6 +129,10 @@ class NativeConnector {
                 resolve(response)
             })
         }) as boolean
+    }
+
+    async closeEditPanel() {
+        return await this.nativeBackend.closeEditPanel(true)
     }
 
 

@@ -23,7 +23,7 @@ export let currentCategorizeMiscDepth = ANKI.CATEGORIZE_MISC_DEPTH
 export let currentCategorizeMiscThreshold = ANKI.CATEGORIZE_MISC_SIMILARITY
 
 // Loading state
-export let loading = signal(true)
+export let loading = signal(false)
 
 // Actions
 export const refreshCardGrid = () => {

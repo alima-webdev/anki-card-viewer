@@ -98,8 +98,8 @@ export function CardGridComponent() {
                     </div>
                 </>
             ) : (
-                <div className="grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
-                    <div className="md:col-span-3 lg:col-span-4 xl:col-span-4 text-sm text-muted-foreground">
+                <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
+                    <div className="sm:col-span-2 md:col-span-3 lg:col-span-4 xl:col-span-4 text-sm text-muted-foreground">
                         Total {paginationInfo.totalCards} results
                     </div>
                     {(cards.length > 0 ? cards.map(({ cardId, noteId, cardOrder, answer, isSuspended, tags, tagsOfInterestEstimated, tagsOfInterest = [] }, index) => {
@@ -127,7 +127,7 @@ export function CardGridComponent() {
                             <>
                                 {/* Category Header */}
                                 {(insertCategoryHeader ?
-                                    <div className="md:col-span-3 lg:col-span-4 xl:col-span-4 flex flex-row">
+                                    <div className="sm:col-span-2 md:col-span-3 lg:col-span-4 xl:col-span-4 flex flex-row">
                                         <h1 className={`my-1 text-3xl font-semibold tracking-tight flex-1 
                                         ${(index > 0 ? "mt-8" : "")}`}>
                                             {currentCategory}

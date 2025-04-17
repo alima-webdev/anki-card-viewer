@@ -18,7 +18,8 @@ from aqt.browser.previewer import BrowserPreviewer as PreviewDialog
 
 from aqt.editor import Editor, EditorMode
 from .utils import getNotesInfo
-from .hooks import Backend
+# from .hooks import Backend
+from .backend import Backend
 from .consts import ADDON_NAME, HOST, PORT, BASE_TAG
 
 from .devtools import isDevelopment, log
@@ -115,6 +116,10 @@ class CardViewerDialog(QDialog):
         # Event binding
         self.editor.call_after_note_saved(editNoteCallback)
 
+    def closeEditPanel(self):
+        self.splitter.setSizes([10,0])
+
+        
     def open(self):
         self.show()
         self.exec()
@@ -143,12 +148,12 @@ class CardViewerDialog(QDialog):
     
     def closeEvent(self, event) -> None:
         
-        print("CLOSE")
+        # print("CLOSE")
         
         if(Backend.queryThread is not None):
             ctypes.pythonapi.PyThreadState_SetAsyncExc(Backend.queryThread.native_id,
               ctypes.py_object(SystemExit))
-        print("CLOSE THREAD")
+        # print("CLOSE THREAD")
         
         
         return super().closeEvent(event)
