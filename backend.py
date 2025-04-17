@@ -10,15 +10,11 @@ from aqt import QObject, pyqtSignal, pyqtSlot
 from aqt import mw
 
 # Internal
-from .consts import HOOKS_PREFIX, BASE_TAG
+from .consts import BASE_TAG
 from .cache import data as cache
 
 # import consts
-from .utils import (
-    # estimateTagsOfInterest,
-    extractTagsOfInterest,
-    processHTML,
-)
+from .utils import extractTagsOfInterest, processHTML
 
 # Devtools
 from .devtools import log
@@ -141,7 +137,7 @@ class Backend(QObject):
             return json.dumps(returnObject)
 
         except Exception as e:
-            print(f"Error in queryFunction: {e}")
+            log(f"Error in queryFunction: {e}")
             return json.dumps([])
 
     # Edit Card

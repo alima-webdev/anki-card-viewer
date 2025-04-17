@@ -136,3 +136,4 @@ backup
 .vscode/
 __pycache__/
 pnpm-lock.yaml
+test.py

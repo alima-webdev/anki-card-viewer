@@ -148,12 +148,8 @@ class CardViewerDialog(QDialog):
     
     def closeEvent(self, event) -> None:
         
-        # print("CLOSE")
-        
         if(Backend.queryThread is not None):
             ctypes.pythonapi.PyThreadState_SetAsyncExc(Backend.queryThread.native_id,
               ctypes.py_object(SystemExit))
-        # print("CLOSE THREAD")
-        
         
         return super().closeEvent(event)
