@@ -138,3 +138,4 @@ __pycache__/
 pnpm-lock.yaml
 test.py
 vendors/
+dist/

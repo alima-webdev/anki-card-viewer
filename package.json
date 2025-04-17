@@ -10,7 +10,8 @@
     "release": "npm run release-prep && release-it",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "python3 runanki.py -b -workspaceRoot ./ -b ../../anki-base/",
-    "prod": "/Applications/Anki.app/Contents/MacOS/Anki -b ../../anki-base/"
+    "prod": "/Applications/Anki.app/Contents/MacOS/Anki -b ../../anki-base/",
+    "package": "zip -r ./dist/anki-card-viewer.zip ./user_files ./web __init__.py backend.py cache.py cardviewer.py consts.py devtools.py install.py LICENSE.txt main.py manifest.json README.md utils.py -x \"./web/node_modules/**\" \"**/node_modules/\" \"**/pnpm-lock.yaml\""
   },
   "author": "",
   "license": "ISC",
